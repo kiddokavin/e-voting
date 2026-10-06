@@ -7,7 +7,11 @@ const state = {
   selectedVoter: null,
   selectedCandidateId: null,
   terminalIp: '192.168.20.10',
-  terminalZone: 'Zone 1 (Red)'
+  terminalZone: 'Zone 1 (Red)',
+
+  // Admin Officer Auth State
+  adminAuthenticated: false,
+  adminUsername: null
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -19,6 +23,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   initDashboardCharts();
   initTopologyCanvas();
 
+  // Check saved session
+  const savedAdmin = sessionStorage.getItem('evoting_admin_session');
+  if (savedAdmin) {
+    state.adminAuthenticated = true;
+    state.adminUsername = savedAdmin;
+    const nameEl = document.getElementById('adminSessionUsername');
+    if (nameEl) nameEl.textContent = savedAdmin;
+  }
+
   // Auto-refresh monitoring stats every 3 seconds
   setInterval(() => {
     if (state.currentTab === 'monitoring') {
@@ -27,8 +40,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   }, 3000);
 });
 
-// Tab Switcher
+// Tab Switcher with Security Guard
 function switchTab(tabId) {
+  // If attempting to access Admin tab without login
+  if (tabId === 'admin' && !state.adminAuthenticated) {
+    showAdminLoginModal();
+    return;
+  }
+
   state.currentTab = tabId;
 
   // Update Nav Buttons
@@ -51,6 +70,55 @@ function switchTab(tabId) {
   } else if (tabId === 'topology') {
     drawTopology();
   }
+}
+
+// Admin Authentication Handlers
+function showAdminLoginModal() {
+  const modal = document.getElementById('adminLoginModal');
+  if (modal) modal.classList.add('show');
+}
+
+function closeAdminLoginModal() {
+  const modal = document.getElementById('adminLoginModal');
+  if (modal) modal.classList.remove('show');
+}
+
+function handleAdminLogin(event) {
+  event.preventDefault();
+  const userEl = document.getElementById('adminUsername');
+  const passEl = document.getElementById('adminPassword');
+
+  const username = (userEl ? userEl.value : '').trim();
+  const password = (passEl ? passEl.value : '').trim();
+
+  // Accept valid admin credentials (e.g. admin / admin123 or officer / ec2026)
+  if ((username.toLowerCase() === 'admin' || username.toLowerCase() === 'officer' || username.toLowerCase() === 'ec_admin') &&
+      (password === 'admin123' || password === 'ec2026' || password === '123456' || password === 'admin')) {
+
+    state.adminAuthenticated = true;
+    state.adminUsername = username;
+    sessionStorage.setItem('evoting_admin_session', username);
+
+    const nameEl = document.getElementById('adminSessionUsername');
+    if (nameEl) nameEl.textContent = username;
+
+    closeAdminLoginModal();
+    showAlert(`🔑 Welcome Election Commission Officer '${username}'! Access Granted.`, 'success');
+
+    // Switch to admin tab
+    switchTab('admin');
+  } else {
+    showAlert('❌ Invalid Officer Credentials! Access Denied.', 'error');
+  }
+}
+
+function logoutAdmin() {
+  state.adminAuthenticated = false;
+  state.adminUsername = null;
+  sessionStorage.removeItem('evoting_admin_session');
+
+  showAlert('🔒 Officer Session Logged Out.', 'info');
+  switchTab('voter');
 }
 
 // Global Alert Notification Toast

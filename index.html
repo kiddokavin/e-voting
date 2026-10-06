@@ -31,7 +31,7 @@
         <span>🌐</span> Packet Tracer Map
       </button>
       <button class="nav-btn" onclick="switchTab('admin')">
-        <span>⚙️</span> Election Control
+        <span>🔒</span> Election Control
       </button>
     </div>
 
@@ -293,7 +293,18 @@
     <div id="tab-admin" class="tab-content">
       <div class="card">
         <div class="card-header">
-          <h2 class="card-title">⚙️ Central Election Commission Control Station (PC8)</h2>
+          <div>
+            <h2 class="card-title">⚙️ Central Election Commission Control Station (PC8)</h2>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Restricted Security Management Terminal - Level 5 Authorization</p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.8rem;">
+            <div style="display: flex; align-items: center; gap: 0.4rem; background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.8rem; color: #10b981; font-weight: bold;">
+              <span>🛡️ Officer Session Active:</span> <span id="adminSessionUsername">admin</span>
+            </div>
+            <button class="btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="logoutAdmin()">
+              🔒 Logout Session
+            </button>
+          </div>
         </div>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
@@ -353,6 +364,43 @@
       </div>
     </div>
 
+  </div>
+
+
+  <!-- MODAL: ELECTION COMMISSION OFFICER LOGIN -->
+  <div class="modal-backdrop" id="adminLoginModal">
+    <div class="modal-box" style="max-width: 440px;">
+      <div class="modal-header">
+        <h2 style="font-size: 1.2rem; color: #60a5fa; display: flex; align-items: center; gap: 0.6rem;">
+          <span>🔒</span> Election Officer Authentication
+        </h2>
+        <button style="background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;" onclick="closeAdminLoginModal()">✕</button>
+      </div>
+
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.2rem;">
+        Restricted Access Terminal (PC8 - VLAN 50). Please enter your Election Commission Officer Credentials to access System Control.
+      </p>
+
+      <form onsubmit="handleAdminLogin(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+        <div class="form-group">
+          <label for="adminUsername">Officer Username</label>
+          <input type="text" id="adminUsername" class="form-input" placeholder="e.g. admin" value="admin" required>
+        </div>
+
+        <div class="form-group">
+          <label for="adminPassword">Officer Password / PIN</label>
+          <input type="password" id="adminPassword" class="form-input" placeholder="Enter password (default: admin123)" value="admin123" required>
+        </div>
+
+        <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); padding: 0.6rem 0.8rem; border-radius: 8px; font-size: 0.78rem; color: #93c5fd;">
+          💡 Demo Credentials: <strong>Username:</strong> <code>admin</code> | <strong>Password:</strong> <code>admin123</code>
+        </div>
+
+        <button type="submit" class="btn-primary" style="margin-top: 0.5rem;">
+          <span>🔑</span> Authenticate Officer Session
+        </button>
+      </form>
+    </div>
   </div>
 
 
