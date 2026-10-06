@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Network Based Secure Electronic Voting System</title>
+  <!-- Chart.js for Live Monitoring Visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <nav class="navbar">
+    <div class="brand-container">
+      <div class="brand-icon">🗳️</div>
+      <div class="brand-title">
+        <h1>NETWORK BASED SECURE ELECTRONIC VOTING SYSTEM</h1>
+        <p>CENTRALIZED MONITORING & PACKET TRACER ARCHITECTURE | IP: 192.168.10.10</p>
+      </div>
+    </div>
+
+    <div class="nav-links">
+      <button class="nav-btn active" onclick="switchTab('voter')">
+        <span>🗳️</span> Voter Terminal
+      </button>
+      <button class="nav-btn" onclick="switchTab('monitoring')">
+        <span>📊</span> Central Monitoring
+      </button>
+      <button class="nav-btn" onclick="switchTab('topology')">
+        <span>🌐</span> Packet Tracer Map
+      </button>
+      <button class="nav-btn" onclick="switchTab('admin')">
+        <span>⚙️</span> Election Control
+      </button>
+    </div>
+
+    <div class="status-badge" id="netStatusBadge">
+      <div class="pulse-dot"></div>
+      <span id="serverStatusText">SERVER ONLINE (VLAN 10)</span>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <div class="main-container">
+
+    <!-- TAB 1: VOTER TERMINAL -->
+    <div id="tab-voter" class="tab-content active">
+      <div class="stats-grid">
+        <div class="stat-card" style="--stat-color: #3b82f6;">
+          <div class="stat-icon">💻</div>
+          <div class="stat-details">
+            <h3 id="currentTerminalText">Booth 1 (PC0)</h3>
+            <p>Terminal IP: 192.168.20.10</p>
+          </div>
+        </div>
+        <div class="stat-card" style="--stat-color: #10b981;">
+          <div class="stat-icon">🔒</div>
+          <div class="stat-details">
+            <h3>SHA-256</h3>
+            <p>End-to-End Encrypted</p>
+          </div>
+        </div>
+        <div class="stat-card" style="--stat-color: #8b5cf6;">
+          <div class="stat-icon">🏛️</div>
+          <div class="stat-details">
+            <h3 id="voterElectionStatus">ACTIVE</h3>
+            <p>Election State</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="voting-grid">
+        <!-- Left: Authentication Panel -->
+        <div class="kiosk-panel">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">🔐 Voter Authentication</h2>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label for="boothSelect">Select Polling Station Subnet</label>
+              <select id="boothSelect" class="form-select" onchange="updateTerminalInfo()">
+                <option value="Zone 1 (Red)|192.168.20.10">Booth 1 - Red Zone (Subnet 192.168.20.0/24)</option>
+                <option value="Zone 2 (Green)|192.168.30.10">Booth 2 - Green Zone (Subnet 192.168.30.0/24)</option>
+                <option value="Zone 3 (Pink)|192.168.40.10">Booth 3 - Pink Zone (Subnet 192.168.40.0/24)</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label for="voterIdInput">Enter Voter ID Number</label>
+              <input type="text" id="voterIdInput" class="form-input" placeholder="e.g. VOTE1001" value="VOTE1001">
+            </div>
+
+            <button class="btn-primary" onclick="verifyVoter()">
+              <span>🔍</span> Verify Voter Eligibility
+            </button>
+
+            <!-- Quick Demo Voters selection -->
+            <div style="margin-top: 1.2rem; border-top: 1px solid var(--border-color); padding-top: 0.8rem;">
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.5rem;">Quick Select Sample Voter:</p>
+              <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;" id="quickVotersList">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Voter Details Card (Hidden by default) -->
+          <div class="card" id="voterDetailsCard" style="display: none;">
+            <div class="card-header">
+              <h2 class="card-title" style="color: #10b981;">✅ Eligible Voter Verified</h2>
+            </div>
+            <p><strong>Name:</strong> <span id="voterNameText">-</span></p>
+            <p><strong>Voter ID:</strong> <span id="verifiedIdText">-</span></p>
+            <p><strong>Assigned Zone:</strong> <span id="voterZoneText">-</span></p>
+            <p style="font-size: 0.8rem; color: #10b981; margin-top: 0.5rem;">Single-Vote Security Token Issued.</p>
+          </div>
+        </div>
+
+        <!-- Right: Official Digital Ballot Paper -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">📜 Official Electronic Ballot Box</h2>
+            <span class="badge badge-info" id="ballotSubtitle">Select Candidate to Vote</span>
+          </div>
+
+          <div class="ballot-grid" id="ballotPaperGrid">
+            <!-- Candidate Cards populated dynamically -->
+          </div>
+
+          <div style="margin-top: 1.5rem; text-align: right;">
+            <button class="btn-primary" id="castVoteBtn" style="width: auto; padding: 0.9rem 2.5rem; display: inline-flex;" disabled onclick="confirmAndCastVote()">
+              <span>🗳️</span> Submit Encrypted Vote
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- TAB 2: CENTRALIZED MONITORING -->
+    <div id="tab-monitoring" class="tab-content">
+      <!-- Live Metrics Header -->
+      <div class="stats-grid">
+        <div class="stat-card" style="--stat-color: #3b82f6;">
+          <div class="stat-icon">📥</div>
+          <div class="stat-details">
+            <h3 id="statTotalVotes">0</h3>
+            <p>Total Votes Cast</p>
+          </div>
+        </div>
+
+        <div class="stat-card" style="--stat-color: #10b981;">
+          <div class="stat-icon">📊</div>
+          <div class="stat-details">
+            <h3 id="statTurnout">0.0%</h3>
+            <p>Voter Turnout</p>
+          </div>
+        </div>
+
+        <div class="stat-card" style="--stat-color: #f59e0b;">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-details">
+            <h3 id="statLeader">-</h3>
+            <p>Leading Candidate</p>
+          </div>
+        </div>
+
+        <div class="stat-card" style="--stat-color: #ef4444;">
+          <div class="stat-icon">🛡️</div>
+          <div class="stat-details">
+            <h3 id="statAlerts">0</h3>
+            <p>Security Incidents Blocked</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">📈 Real-Time Candidate Vote Share</h2>
+          </div>
+          <div style="height: 280px;">
+            <canvas id="candidateChart"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">🎨 Zone-Wise Turnout</h2>
+          </div>
+          <div style="height: 280px;">
+            <canvas id="zoneChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Network Node Status & Audit Log -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">🖥️ Server Farm & Network Node Status</h2>
+            <span class="badge badge-success">Ping Monitoring Active</span>
+          </div>
+          <div class="table-responsive" style="max-height: 320px;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Node Name</th>
+                  <th>IP Address</th>
+                  <th>Zone</th>
+                  <th>Latency</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="nodeStatusTable">
+                <!-- Nodes populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">📜 Live Central Audit Stream (Server3)</h2>
+            <button class="btn-danger" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="refreshLogs()">Refresh</button>
+          </div>
+          <div class="log-console" id="auditLogConsole">
+            <!-- Logs populated dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- TAB 3: PACKET TRACER MAP -->
+    <div id="tab-topology" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">🌐 Cisco Packet Tracer Network Topology Simulation</h2>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Exact visual representation of the project network diagram (Router0, Multilayer Switch0, Server Farm & Booth Subnets 1-4)</p>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn-primary" style="padding: 0.5rem 1rem; width: auto;" onclick="triggerDemoPacket()">
+              <span>🚀</span> Simulate Vote Packet Trace
+            </button>
+            <button class="btn-primary" style="padding: 0.5rem 1rem; width: auto; background: #8b5cf6;" onclick="triggerPingTest()">
+              <span>📡</span> Ping All Nodes
+            </button>
+          </div>
+        </div>
+
+        <div class="topology-container">
+          <canvas id="topologyCanvas"></canvas>
+
+          <div class="topo-legend">
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--zone-blue-border);"></div>
+              <span>Blue Zone: Server Farm</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--zone-red-border);"></div>
+              <span>Red Zone: Booth 1</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--zone-green-border);"></div>
+              <span>Green Zone: Booth 2</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--zone-pink-border);"></div>
+              <span>Pink Zone: Booth 3</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--zone-yellow-border);"></div>
+              <span>Yellow Zone: Central Admin</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 1rem; background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
+          <h4 style="margin-bottom: 0.5rem; color: #60a5fa;">💡 Click on any router, switch, or server above to view detailed IP config, MAC address, and traffic metrics!</h4>
+          <div id="nodeDetailBox" style="font-family: monospace; font-size: 0.85rem; color: #d1d5db;">
+            Select a network device from the canvas to inspect...
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- TAB 4: ELECTION CONTROL CENTER -->
+    <div id="tab-admin" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">⚙️ Central Election Commission Control Station (PC8)</h2>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+          <!-- Election Lifecycle Controls -->
+          <div style="background: rgba(255,255,255,0.03); padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+            <h3 style="margin-bottom: 1rem; font-size: 1rem;">🚥 Election State Controller</h3>
+            <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+              <button class="btn-primary" style="background: #10b981;" onclick="adminAction('START')">
+                <span>▶️</span> Start / Resume Election
+              </button>
+              <button class="btn-primary" style="background: #f59e0b;" onclick="adminAction('PAUSE')">
+                <span>⏸️</span> Pause Voting (Maintenance Mode)
+              </button>
+              <button class="btn-primary" style="background: #ef4444;" onclick="adminAction('END')">
+                <span>⏹️</span> Finalize & Lock Election
+              </button>
+              <button class="btn-danger" style="margin-top: 0.5rem;" onclick="adminAction('RESET')">
+                <span>⚠️</span> Reset All Votes & Clear Database
+              </button>
+            </div>
+          </div>
+
+          <!-- Intrusion & Threat Simulator -->
+          <div style="background: rgba(255,255,255,0.03); padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+            <h3 style="margin-bottom: 1rem; font-size: 1rem;">🛡️ Cyber Attack & IDS Simulator</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Test the Central Audit Monitoring System (Server3) response to simulated network threats.</p>
+            <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+              <button class="btn-primary" style="background: #8b5cf6;" onclick="adminAction('SIMULATE_ATTACK')">
+                <span>💥</span> Simulate SYN Flood Attack on Web Server
+              </button>
+              <button class="btn-primary" style="background: #ec4899;" onclick="testDoubleVoteSimulation()">
+                <span>🚫</span> Test Double-Voting Block Security
+              </button>
+            </div>
+          </div>
+
+          <!-- Register New Voter -->
+          <div style="background: rgba(255,255,255,0.03); padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+            <h3 style="margin-bottom: 1rem; font-size: 1rem;">👤 Register New Eligible Voter</h3>
+            <div class="form-group" style="margin-bottom: 0.8rem;">
+              <label>Full Name</label>
+              <input type="text" id="newVoterName" class="form-input" placeholder="e.g. Ramesh Kumar">
+            </div>
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label>Assigned Booth</label>
+              <select id="newVoterBooth" class="form-select">
+                <option value="Zone 1 (Red)">Zone 1 (Red)</option>
+                <option value="Zone 2 (Green)">Zone 2 (Green)</option>
+                <option value="Zone 3 (Pink)">Zone 3 (Pink)</option>
+              </select>
+            </div>
+            <button class="btn-primary" onclick="addNewVoter()">
+              <span>➕</span> Register Voter
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- MODAL: VOTE CONFIRMATION & RECEIPT -->
+  <div class="modal-backdrop" id="receiptModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 style="font-size: 1.2rem; color: #10b981;">🗳️ Vote Cast & Cryptographically Signed!</h2>
+        <button style="background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;" onclick="closeReceiptModal()">✕</button>
+      </div>
+
+      <p style="font-size: 0.85rem; color: var(--text-muted);">Your vote has been transmitted across the network, validated by Server4, and committed to Database Server0.</p>
+
+      <div class="receipt-container" id="receiptDetailsContent">
+        <!-- Receipt fields populated dynamically -->
+      </div>
+
+      <div style="display: flex; gap: 0.8rem; margin-top: 1rem;">
+        <button class="btn-primary" onclick="printReceipt()">
+          <span>🖨️</span> Print Vote Receipt
+        </button>
+        <button class="btn-primary" style="background: #4b5563;" onclick="closeReceiptModal()">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/topology.js"></script>
+  <script src="js/voting.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

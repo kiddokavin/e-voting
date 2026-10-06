@@ -1,0 +1,738 @@
+{
+  "electionStatus": "PAUSED",
+  "startTime": "2026-10-06T11:02:12.844Z",
+  "candidates": [
+    {
+      "id": "CAND_01",
+      "name": "Dr. A. R. Sharma",
+      "party": "National Progress Party (NPP)",
+      "symbol": "⚖️",
+      "color": "#3b82f6",
+      "manifesto": "Focus on Digital Infrastructure, Cyber Security, and Economic Growth.",
+      "votes": 144
+    },
+    {
+      "id": "CAND_02",
+      "name": "Er. S. Meenakshi",
+      "party": "United Democratic Alliance (UDA)",
+      "symbol": "🌱",
+      "color": "#10b981",
+      "manifesto": "Sustainable Green Energy, Higher Education, and Tech Innovation.",
+      "votes": 130
+    },
+    {
+      "id": "CAND_03",
+      "name": "K. Rajesh Kumar",
+      "party": "People's Freedom Front (PFF)",
+      "symbol": "⚡",
+      "color": "#f59e0b",
+      "manifesto": "Rural Broadband Network, Youth Employment, and Public Health.",
+      "votes": 95
+    },
+    {
+      "id": "CAND_04",
+      "name": "NOTA (None of the Above)",
+      "party": "Independent Neutral Choice",
+      "symbol": "🚫",
+      "color": "#6b7280",
+      "manifesto": "Reject all listed candidates for this election cycle.",
+      "votes": 16
+    }
+  ],
+  "voters": [
+    {
+      "id": "VOTE1001",
+      "name": "Kavin Kumar",
+      "booth": "Zone 1 (Red)",
+      "status": "REGISTERED",
+      "voted": true,
+      "votedAt": "2026-10-06T11:03:46.030Z",
+      "voteHash": "4604d312ebde3840e939aa5cb73ac096add106b68834abfc9fe2f43d18cbc65a"
+    },
+    {
+      "id": "VOTE1002",
+      "name": "Priya Dharshini",
+      "booth": "Zone 1 (Red)",
+      "status": "REGISTERED",
+      "voted": true,
+      "votedAt": "2026-10-06T11:11:29.766Z",
+      "voteHash": "efcda965f15bbb8d52cf743a29d1a785245dc194cff09f3ebbc101dcdae7f7ed"
+    },
+    {
+      "id": "VOTE1003",
+      "name": "Anand Viswanathan",
+      "booth": "Zone 2 (Green)",
+      "status": "REGISTERED",
+      "voted": true,
+      "votedAt": "2026-10-06T11:11:47.270Z",
+      "voteHash": "27920322a98441dc7a0412369e579c886909e3059dedc415828a6d864b9aeee7"
+    },
+    {
+      "id": "VOTE1004",
+      "name": "Deepa Sundaram",
+      "booth": "Zone 2 (Green)",
+      "status": "REGISTERED",
+      "voted": true,
+      "votedAt": "2026-10-06T11:27:17.352Z",
+      "voteHash": "cd391aff84ab8aade451790747f466414392b991f49666d47679408e1c8c988a"
+    },
+    {
+      "id": "VOTE1005",
+      "name": "Vikram Chandran",
+      "booth": "Zone 3 (Pink)",
+      "status": "REGISTERED",
+      "voted": false
+    },
+    {
+      "id": "VOTE1006",
+      "name": "Sanjay Raghavan",
+      "booth": "Zone 3 (Pink)",
+      "status": "REGISTERED",
+      "voted": true,
+      "votedAt": "2026-10-06T11:20:15.825Z",
+      "voteHash": "eb985e28e9cdde1b12a77df2193550b6ef96dcb33c7a9d75922589662bf45f1c"
+    },
+    {
+      "id": "VOTE1007",
+      "name": "Lakshmi Narayanan",
+      "booth": "Zone 1 (Red)",
+      "status": "REGISTERED",
+      "voted": false
+    },
+    {
+      "id": "VOTE1008",
+      "name": "Karthik Subramanian",
+      "booth": "Zone 2 (Green)",
+      "status": "REGISTERED",
+      "voted": false
+    },
+    {
+      "id": "VOTE1009",
+      "name": "Divya Bharathi",
+      "booth": "Zone 3 (Pink)",
+      "status": "REGISTERED",
+      "voted": false
+    },
+    {
+      "id": "VOTE1010",
+      "name": "Manojit Banerjee",
+      "booth": "Zone 1 (Red)",
+      "status": "REGISTERED",
+      "voted": false
+    }
+  ],
+  "nodes": [
+    {
+      "id": "router0",
+      "name": "Router0 (Central Gateway)",
+      "ip": "192.168.1.1",
+      "type": "ROUTER",
+      "zone": "Core",
+      "status": "ONLINE",
+      "latency": 2,
+      "packets": 1420
+    },
+    {
+      "id": "mswitch0",
+      "name": "Multilayer Switch0 (3560-24PS)",
+      "ip": "192.168.1.2",
+      "type": "CORE_SWITCH",
+      "zone": "Core",
+      "status": "ONLINE",
+      "latency": 1,
+      "packets": 3300
+    },
+    {
+      "id": "web_server",
+      "name": "WEB Server (E-Voting Engine)",
+      "ip": "192.168.10.10",
+      "type": "SERVER",
+      "zone": "Blue (Server Farm)",
+      "status": "ONLINE",
+      "latency": 3,
+      "packets": 1940,
+      "role": "Web Portal & REST API"
+    },
+    {
+      "id": "dns_server",
+      "name": "DNS Server (evoting.gov.in)",
+      "ip": "192.168.10.11",
+      "type": "SERVER",
+      "zone": "Blue (Server Farm)",
+      "status": "ONLINE",
+      "latency": 2,
+      "packets": 840,
+      "role": "Domain Resolution"
+    },
+    {
+      "id": "db_server",
+      "name": "Database Server (Server0)",
+      "ip": "192.168.10.12",
+      "type": "SERVER",
+      "zone": "Blue (Server Farm)",
+      "status": "ONLINE",
+      "latency": 4,
+      "packets": 2200,
+      "role": "Encrypted Vote Storage"
+    },
+    {
+      "id": "audit_server",
+      "name": "Central Audit Server (Server3)",
+      "ip": "192.168.10.13",
+      "type": "SERVER",
+      "zone": "Blue (Server Farm)",
+      "status": "ONLINE",
+      "latency": 3,
+      "packets": 2030,
+      "role": "Centralized Monitoring & IDS"
+    },
+    {
+      "id": "sec_server",
+      "name": "Security CA Server (Server4)",
+      "ip": "192.168.10.14",
+      "type": "SERVER",
+      "zone": "Blue (Server Farm)",
+      "status": "ONLINE",
+      "latency": 2,
+      "packets": 1150,
+      "role": "SSL/TLS & Hash Signatures"
+    },
+    {
+      "id": "switch0",
+      "name": "Switch0 (Server Switch)",
+      "ip": "192.168.10.1",
+      "type": "SWITCH",
+      "zone": "Blue (Server Farm)",
+      "status": "ONLINE",
+      "latency": 1,
+      "packets": 3150
+    },
+    {
+      "id": "switch1",
+      "name": "Switch1 (Booth 1 Switch)",
+      "ip": "192.168.20.1",
+      "type": "SWITCH",
+      "zone": "Red (Booth 1)",
+      "status": "ONLINE",
+      "latency": 5,
+      "packets": 470
+    },
+    {
+      "id": "pc0",
+      "name": "PC0 (Booth 1 Terminal A)",
+      "ip": "192.168.20.10",
+      "type": "PC",
+      "zone": "Red (Booth 1)",
+      "status": "ONLINE",
+      "latency": 8,
+      "packets": 260
+    },
+    {
+      "id": "pc1",
+      "name": "PC1 (Booth 1 Terminal B)",
+      "ip": "192.168.20.11",
+      "type": "PC",
+      "zone": "Red (Booth 1)",
+      "status": "ONLINE",
+      "latency": 7,
+      "packets": 210
+    },
+    {
+      "id": "switch2",
+      "name": "Switch2 (Booth 2 Switch)",
+      "ip": "192.168.30.1",
+      "type": "SWITCH",
+      "zone": "Green (Booth 2)",
+      "status": "ONLINE",
+      "latency": 6,
+      "packets": 380
+    },
+    {
+      "id": "pc2",
+      "name": "PC2 (Booth 2 Terminal A)",
+      "ip": "192.168.30.10",
+      "type": "PC",
+      "zone": "Green (Booth 2)",
+      "status": "ONLINE",
+      "latency": 9,
+      "packets": 190
+    },
+    {
+      "id": "pc3",
+      "name": "PC3 (Booth 2 Terminal B)",
+      "ip": "192.168.30.11",
+      "type": "PC",
+      "zone": "Green (Booth 2)",
+      "status": "ONLINE",
+      "latency": 8,
+      "packets": 190
+    },
+    {
+      "id": "switch3",
+      "name": "Switch3 (Booth 3 Switch)",
+      "ip": "192.168.40.1",
+      "type": "SWITCH",
+      "zone": "Pink (Booth 3)",
+      "status": "ONLINE",
+      "latency": 7,
+      "packets": 310
+    },
+    {
+      "id": "pc4",
+      "name": "PC4 (Booth 3 Terminal A)",
+      "ip": "192.168.40.10",
+      "type": "PC",
+      "zone": "Pink (Booth 3)",
+      "status": "ONLINE",
+      "latency": 11,
+      "packets": 155
+    },
+    {
+      "id": "pc5",
+      "name": "PC5 (Booth 3 Terminal B)",
+      "ip": "192.168.40.11",
+      "type": "PC",
+      "zone": "Pink (Booth 3)",
+      "status": "ONLINE",
+      "latency": 10,
+      "packets": 155
+    },
+    {
+      "id": "switch4",
+      "name": "Switch4 (Admin Switch)",
+      "ip": "192.168.50.1",
+      "type": "SWITCH",
+      "zone": "Yellow (Central Monitoring)",
+      "status": "ONLINE",
+      "latency": 4,
+      "packets": 980
+    },
+    {
+      "id": "pc6",
+      "name": "PC6 (Monitoring Terminal 1)",
+      "ip": "192.168.50.10",
+      "type": "PC",
+      "zone": "Yellow (Central Monitoring)",
+      "status": "ONLINE",
+      "latency": 5,
+      "packets": 320
+    },
+    {
+      "id": "pc7",
+      "name": "PC7 (Monitoring Terminal 2)",
+      "ip": "192.168.50.11",
+      "type": "PC",
+      "zone": "Yellow (Central Monitoring)",
+      "status": "ONLINE",
+      "latency": 6,
+      "packets": 330
+    },
+    {
+      "id": "pc8",
+      "name": "PC8 (Election Officer PC)",
+      "ip": "192.168.50.12",
+      "type": "PC",
+      "zone": "Yellow (Central Monitoring)",
+      "status": "ONLINE",
+      "latency": 4,
+      "packets": 330
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": "LOG_1791286043684",
+      "timestamp": "2026-10-06T11:27:23.684Z",
+      "type": "ADMIN",
+      "sourceIp": "192.168.50.12",
+      "message": "ADMIN ACTION: Election state changed to 'PAUSE'",
+      "hash": "388bb66b764b6e8181e72566f7be165be34a4ee61ef7128760dbd1acb035abb1"
+    },
+    {
+      "id": "LOG_1791286037352",
+      "timestamp": "2026-10-06T11:27:17.352Z",
+      "type": "VOTE_CAST",
+      "sourceIp": "192.168.20.10",
+      "message": "VOTE_CAST_SUCCESS: Voter VOTE1004 cast vote at Zone 1 (Red). Hash: cd391aff84ab8aad...",
+      "hash": "cd391aff84ab8aade451790747f466414392b991f49666d47679408e1c8c988a"
+    },
+    {
+      "id": "LOG_1791285615825",
+      "timestamp": "2026-10-06T11:20:15.825Z",
+      "type": "VOTE_CAST",
+      "sourceIp": "192.168.20.10",
+      "message": "VOTE_CAST_SUCCESS: Voter VOTE1006 cast vote at Zone 1 (Red). Hash: eb985e28e9cdde1b...",
+      "hash": "eb985e28e9cdde1b12a77df2193550b6ef96dcb33c7a9d75922589662bf45f1c"
+    },
+    {
+      "id": "LOG_1791285343728",
+      "timestamp": "2026-10-06T11:15:43.728Z",
+      "type": "ADMIN",
+      "sourceIp": "192.168.50.12",
+      "message": "ADMIN ACTION: Election state changed to 'START'",
+      "hash": "ba33d9447055161cde6b2e8c20ce284b4d3012ab98d7d65491fe75fbe20cea59"
+    },
+    {
+      "id": "LOG_1791285174097",
+      "timestamp": "2026-10-06T11:12:54.097Z",
+      "type": "SECURITY_ALERT",
+      "sourceIp": "::1",
+      "message": "DOUBLE_VOTE_BLOCKED: Voter VOTE1002 (Priya Dharshini) attempted to vote twice!",
+      "hash": "d5a6963e107befd4a49f3afcb2a39a0c1988add9961865ce4e1effe2d850bfd7"
+    },
+    {
+      "id": "LOG_1791285169175",
+      "timestamp": "2026-10-06T11:12:49.175Z",
+      "type": "ADMIN",
+      "sourceIp": "192.168.50.12",
+      "message": "ADMIN ACTION: Election state changed to 'PAUSE'",
+      "hash": "a08caa086613fc82db3218cb614ce4c1474c009dcad7e19506d706e8b8f2635a"
+    },
+    {
+      "id": "LOG_1791285143485",
+      "timestamp": "2026-10-06T11:12:23.485Z",
+      "type": "ADMIN",
+      "sourceIp": "192.168.50.12",
+      "message": "ADMIN ACTION: Election state changed to 'START'",
+      "hash": "5cffc1f3f41d5f11886f174f6f657071287cb9495078be6b55a05e645cfed3c7"
+    },
+    {
+      "id": "LOG_1791285116041",
+      "timestamp": "2026-10-06T11:11:56.041Z",
+      "type": "SECURITY_ALERT",
+      "sourceIp": "::1",
+      "message": "DOUBLE_VOTE_BLOCKED: Voter VOTE1002 (Priya Dharshini) attempted to vote twice!",
+      "hash": "0b789ef2da5abea5d0a75cef1f53fa2208b1ff4e19fd804d21fc7ff68194c87e"
+    },
+    {
+      "id": "LOG_1791285115353",
+      "timestamp": "2026-10-06T11:11:55.353Z",
+      "type": "SECURITY_ALERT",
+      "sourceIp": "::1",
+      "message": "DOUBLE_VOTE_BLOCKED: Voter VOTE1002 (Priya Dharshini) attempted to vote twice!",
+      "hash": "7a370ba46469c1ca90b00bdfb0d4fdc935562fab79fa399e356b4cd66a6511e0"
+    },
+    {
+      "id": "LOG_1791285111637",
+      "timestamp": "2026-10-06T11:11:51.637Z",
+      "type": "SECURITY_ALERT",
+      "sourceIp": "::1",
+      "message": "DOUBLE_VOTE_BLOCKED: Voter VOTE1002 (Priya Dharshini) attempted to vote twice!",
+      "hash": "733d1b3aa4700a276e97f46ad0056c8beebe4c3ea0bfd5d34509fb234d188218"
+    },
+    {
+      "id": "LOG_1791285107271",
+      "timestamp": "2026-10-06T11:11:47.270Z",
+      "type": "VOTE_CAST",
+      "sourceIp": "192.168.20.10",
+      "message": "VOTE_CAST_SUCCESS: Voter VOTE1003 cast vote at Zone 1 (Red). Hash: 27920322a98441dc...",
+      "hash": "27920322a98441dc7a0412369e579c886909e3059dedc415828a6d864b9aeee7"
+    },
+    {
+      "id": "LOG_1791285089766",
+      "timestamp": "2026-10-06T11:11:29.766Z",
+      "type": "VOTE_CAST",
+      "sourceIp": "192.168.20.10",
+      "message": "VOTE_CAST_SUCCESS: Voter VOTE1002 cast vote at Zone 1 (Red). Hash: efcda965f15bbb8d...",
+      "hash": "efcda965f15bbb8d52cf743a29d1a785245dc194cff09f3ebbc101dcdae7f7ed"
+    },
+    {
+      "id": "LOG_1791285005061",
+      "timestamp": "2026-10-06T11:10:05.061Z",
+      "type": "SECURITY_ALERT",
+      "sourceIp": "::1",
+      "message": "DOUBLE_VOTE_BLOCKED: Voter VOTE1001 (Kavin Kumar) attempted to vote twice!",
+      "hash": "2a08b40a20689e3be9ebe75c7cab8ff549f31f583d2cbeb71dab550c00b6d383"
+    },
+    {
+      "id": "LOG_1791284626031",
+      "timestamp": "2026-10-06T11:03:46.030Z",
+      "type": "VOTE_CAST",
+      "sourceIp": "192.168.20.10",
+      "message": "VOTE_CAST_SUCCESS: Voter VOTE1001 cast vote at Zone 1 (Red). Hash: 4604d312ebde3840...",
+      "hash": "4604d312ebde3840e939aa5cb73ac096add106b68834abfc9fe2f43d18cbc65a"
+    },
+    {
+      "id": "LOG_1001",
+      "timestamp": "2026-10-06T10:02:12.844Z",
+      "type": "SYSTEM",
+      "sourceIp": "192.168.10.13",
+      "message": "Centralized Monitoring Service initialized on Server3.",
+      "hash": "2b0d4d0d08d03a50bc6d07b0280e91aec87e1824531a4ff952a0db0bdcf5405d"
+    },
+    {
+      "id": "LOG_1002",
+      "timestamp": "2026-10-06T10:12:12.845Z",
+      "type": "NETWORK",
+      "sourceIp": "192.168.1.1",
+      "message": "Core Multilayer Switch 3560-24PS link established with VLAN 10, 20, 30, 40, 50.",
+      "hash": "1558ec83141c5709831c602dad79788fb6dcc5f7ab3eb533bee34babbb802cb4"
+    }
+  ],
+  "votesCast": [
+    {
+      "txId": "TX_1791286037352",
+      "voterId": "VOTE1004",
+      "candidateId": "CAND_01",
+      "candidateName": "Dr. A. R. Sharma",
+      "party": "National Progress Party (NPP)",
+      "boothZone": "Zone 1 (Red)",
+      "sourceIp": "192.168.20.10",
+      "timestamp": "2026-10-06T11:27:17.352Z",
+      "hash": "cd391aff84ab8aade451790747f466414392b991f49666d47679408e1c8c988a",
+      "route": [
+        {
+          "node": "192.168.20.10",
+          "name": "Polling Terminal (192.168.20.10)",
+          "step": 1
+        },
+        {
+          "node": "switch1",
+          "name": "Subnet Access Switch (switch1)",
+          "step": 2
+        },
+        {
+          "node": "mswitch0",
+          "name": "Multilayer Core Switch (3560-24PS)",
+          "step": 3
+        },
+        {
+          "node": "switch0",
+          "name": "Server Farm Switch (Switch0)",
+          "step": 4
+        },
+        {
+          "node": "web_server",
+          "name": "E-Voting WEB Server (192.168.10.10)",
+          "step": 5
+        },
+        {
+          "node": "sec_server",
+          "name": "Security CA Server (192.168.10.14) - SHA-256 Sign",
+          "step": 6
+        },
+        {
+          "node": "db_server",
+          "name": "Database Server0 (192.168.10.12) - Commit Ledger",
+          "step": 7
+        },
+        {
+          "node": "audit_server",
+          "name": "Central Audit Server3 (192.168.10.13) - Log & Notify",
+          "step": 8
+        }
+      ]
+    },
+    {
+      "txId": "TX_1791285615825",
+      "voterId": "VOTE1006",
+      "candidateId": "CAND_02",
+      "candidateName": "Er. S. Meenakshi",
+      "party": "United Democratic Alliance (UDA)",
+      "boothZone": "Zone 1 (Red)",
+      "sourceIp": "192.168.20.10",
+      "timestamp": "2026-10-06T11:20:15.825Z",
+      "hash": "eb985e28e9cdde1b12a77df2193550b6ef96dcb33c7a9d75922589662bf45f1c",
+      "route": [
+        {
+          "node": "192.168.20.10",
+          "name": "Polling Terminal (192.168.20.10)",
+          "step": 1
+        },
+        {
+          "node": "switch1",
+          "name": "Subnet Access Switch (switch1)",
+          "step": 2
+        },
+        {
+          "node": "mswitch0",
+          "name": "Multilayer Core Switch (3560-24PS)",
+          "step": 3
+        },
+        {
+          "node": "switch0",
+          "name": "Server Farm Switch (Switch0)",
+          "step": 4
+        },
+        {
+          "node": "web_server",
+          "name": "E-Voting WEB Server (192.168.10.10)",
+          "step": 5
+        },
+        {
+          "node": "sec_server",
+          "name": "Security CA Server (192.168.10.14) - SHA-256 Sign",
+          "step": 6
+        },
+        {
+          "node": "db_server",
+          "name": "Database Server0 (192.168.10.12) - Commit Ledger",
+          "step": 7
+        },
+        {
+          "node": "audit_server",
+          "name": "Central Audit Server3 (192.168.10.13) - Log & Notify",
+          "step": 8
+        }
+      ]
+    },
+    {
+      "txId": "TX_1791285107271",
+      "voterId": "VOTE1003",
+      "candidateId": "CAND_02",
+      "candidateName": "Er. S. Meenakshi",
+      "party": "United Democratic Alliance (UDA)",
+      "boothZone": "Zone 1 (Red)",
+      "sourceIp": "192.168.20.10",
+      "timestamp": "2026-10-06T11:11:47.270Z",
+      "hash": "27920322a98441dc7a0412369e579c886909e3059dedc415828a6d864b9aeee7",
+      "route": [
+        {
+          "node": "192.168.20.10",
+          "name": "Polling Terminal (192.168.20.10)",
+          "step": 1
+        },
+        {
+          "node": "switch1",
+          "name": "Subnet Access Switch (switch1)",
+          "step": 2
+        },
+        {
+          "node": "mswitch0",
+          "name": "Multilayer Core Switch (3560-24PS)",
+          "step": 3
+        },
+        {
+          "node": "switch0",
+          "name": "Server Farm Switch (Switch0)",
+          "step": 4
+        },
+        {
+          "node": "web_server",
+          "name": "E-Voting WEB Server (192.168.10.10)",
+          "step": 5
+        },
+        {
+          "node": "sec_server",
+          "name": "Security CA Server (192.168.10.14) - SHA-256 Sign",
+          "step": 6
+        },
+        {
+          "node": "db_server",
+          "name": "Database Server0 (192.168.10.12) - Commit Ledger",
+          "step": 7
+        },
+        {
+          "node": "audit_server",
+          "name": "Central Audit Server3 (192.168.10.13) - Log & Notify",
+          "step": 8
+        }
+      ]
+    },
+    {
+      "txId": "TX_1791285089766",
+      "voterId": "VOTE1002",
+      "candidateId": "CAND_04",
+      "candidateName": "NOTA (None of the Above)",
+      "party": "Independent Neutral Choice",
+      "boothZone": "Zone 1 (Red)",
+      "sourceIp": "192.168.20.10",
+      "timestamp": "2026-10-06T11:11:29.766Z",
+      "hash": "efcda965f15bbb8d52cf743a29d1a785245dc194cff09f3ebbc101dcdae7f7ed",
+      "route": [
+        {
+          "node": "192.168.20.10",
+          "name": "Polling Terminal (192.168.20.10)",
+          "step": 1
+        },
+        {
+          "node": "switch1",
+          "name": "Subnet Access Switch (switch1)",
+          "step": 2
+        },
+        {
+          "node": "mswitch0",
+          "name": "Multilayer Core Switch (3560-24PS)",
+          "step": 3
+        },
+        {
+          "node": "switch0",
+          "name": "Server Farm Switch (Switch0)",
+          "step": 4
+        },
+        {
+          "node": "web_server",
+          "name": "E-Voting WEB Server (192.168.10.10)",
+          "step": 5
+        },
+        {
+          "node": "sec_server",
+          "name": "Security CA Server (192.168.10.14) - SHA-256 Sign",
+          "step": 6
+        },
+        {
+          "node": "db_server",
+          "name": "Database Server0 (192.168.10.12) - Commit Ledger",
+          "step": 7
+        },
+        {
+          "node": "audit_server",
+          "name": "Central Audit Server3 (192.168.10.13) - Log & Notify",
+          "step": 8
+        }
+      ]
+    },
+    {
+      "txId": "TX_1791284626030",
+      "voterId": "VOTE1001",
+      "candidateId": "CAND_01",
+      "candidateName": "Dr. A. R. Sharma",
+      "party": "National Progress Party (NPP)",
+      "boothZone": "Zone 1 (Red)",
+      "sourceIp": "192.168.20.10",
+      "timestamp": "2026-10-06T11:03:46.030Z",
+      "hash": "4604d312ebde3840e939aa5cb73ac096add106b68834abfc9fe2f43d18cbc65a",
+      "route": [
+        {
+          "node": "192.168.20.10",
+          "name": "Polling Terminal (192.168.20.10)",
+          "step": 1
+        },
+        {
+          "node": "switch1",
+          "name": "Subnet Access Switch (switch1)",
+          "step": 2
+        },
+        {
+          "node": "mswitch0",
+          "name": "Multilayer Core Switch (3560-24PS)",
+          "step": 3
+        },
+        {
+          "node": "switch0",
+          "name": "Server Farm Switch (Switch0)",
+          "step": 4
+        },
+        {
+          "node": "web_server",
+          "name": "E-Voting WEB Server (192.168.10.10)",
+          "step": 5
+        },
+        {
+          "node": "sec_server",
+          "name": "Security CA Server (192.168.10.14) - SHA-256 Sign",
+          "step": 6
+        },
+        {
+          "node": "db_server",
+          "name": "Database Server0 (192.168.10.12) - Commit Ledger",
+          "step": 7
+        },
+        {
+          "node": "audit_server",
+          "name": "Central Audit Server3 (192.168.10.13) - Log & Notify",
+          "step": 8
+        }
+      ]
+    }
+  ]
+}
