@@ -9,7 +9,7 @@ const state = {
   terminalIp: '192.168.20.10',
   terminalZone: 'Zone 1 (Red)',
 
-  // Admin Officer Auth State
+  // Admin Officer Auth State (Requires login EVERY SINGLE TIME)
   adminAuthenticated: false,
   adminUsername: null
 };
@@ -23,15 +23,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   initDashboardCharts();
   initTopologyCanvas();
 
-  // Check saved session
-  const savedAdmin = sessionStorage.getItem('evoting_admin_session');
-  if (savedAdmin) {
-    state.adminAuthenticated = true;
-    state.adminUsername = savedAdmin;
-    const nameEl = document.getElementById('adminSessionUsername');
-    if (nameEl) nameEl.textContent = savedAdmin;
-  }
-
   // Auto-refresh monitoring stats every 3 seconds
   setInterval(() => {
     if (state.currentTab === 'monitoring') {
@@ -40,9 +31,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   }, 3000);
 });
 
-// Tab Switcher with Security Guard
+// Tab Switcher with Strict Single-Use Security Guard
 function switchTab(tabId) {
-  // If attempting to access Admin tab without login
+  // If leaving admin tab, automatically lock and reset admin session so login is required NEXT time
+  if (state.currentTab === 'admin' && tabId !== 'admin') {
+    state.adminAuthenticated = false;
+    state.adminUsername = null;
+  }
+
+  // If attempting to access Admin tab without authenticating first
   if (tabId === 'admin' && !state.adminAuthenticated) {
     showAdminLoginModal();
     return;
@@ -75,7 +72,12 @@ function switchTab(tabId) {
 // Admin Authentication Handlers
 function showAdminLoginModal() {
   const modal = document.getElementById('adminLoginModal');
-  if (modal) modal.classList.add('show');
+  if (modal) {
+    // Clear previous password input every time modal is opened
+    const passEl = document.getElementById('adminPassword');
+    if (passEl) passEl.value = '';
+    modal.classList.add('show');
+  }
 }
 
 function closeAdminLoginModal() {
@@ -97,13 +99,12 @@ function handleAdminLogin(event) {
 
     state.adminAuthenticated = true;
     state.adminUsername = username;
-    sessionStorage.setItem('evoting_admin_session', username);
 
     const nameEl = document.getElementById('adminSessionUsername');
     if (nameEl) nameEl.textContent = username;
 
     closeAdminLoginModal();
-    showAlert(`🔑 Welcome Election Commission Officer '${username}'! Access Granted.`, 'success');
+    showAlert(`🔑 Access Granted! Officer '${username}' authenticated for this session.`, 'success');
 
     // Switch to admin tab
     switchTab('admin');
@@ -115,9 +116,7 @@ function handleAdminLogin(event) {
 function logoutAdmin() {
   state.adminAuthenticated = false;
   state.adminUsername = null;
-  sessionStorage.removeItem('evoting_admin_session');
-
-  showAlert('🔒 Officer Session Logged Out.', 'info');
+  showAlert('🔒 Officer Session Terminated.', 'info');
   switchTab('voter');
 }
 
