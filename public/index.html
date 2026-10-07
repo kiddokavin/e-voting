@@ -234,100 +234,170 @@
         <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
           <div>
             <h2 class="card-title">🌐 Cisco Packet Tracer Interactive Network Simulator</h2>
-            <p style="font-size: 0.8rem; color: var(--text-muted);">Exact visual representation of the project network diagram (Router0, Multilayer Switch0, Server Farm & Booth Subnets 1-4)</p>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Centralized E-Voting Network Topology (Router0, Multilayer Switch0, Server Farm & Booth VLANs 10-50)</p>
           </div>
 
           <!-- Interactive Custom Packet Generator Controls -->
           <div style="display: flex; gap: 0.6rem; align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 10px; border: 1px solid var(--border-color); flex-wrap: wrap;">
             <span style="font-size: 0.78rem; color: #60a5fa; font-weight: bold;">📡 Send ICMP Packet:</span>
             <select id="packetSourceSelect" class="form-select" style="padding: 0.3rem 0.6rem; font-size: 0.78rem; width: 140px;">
-              <option value="pc0">PC0 (Booth 1)</option>
-              <option value="pc2">PC2 (Booth 2)</option>
-              <option value="pc4">PC4 (Booth 3)</option>
-              <option value="pc8">PC8 (Admin PC)</option>
+              <option value="PC0">PC0 (Booth 1)</option>
+              <option value="PC1">PC1 (Booth 1)</option>
+              <option value="PC2">PC2 (Booth 2)</option>
+              <option value="PC4">PC4 (Booth 3)</option>
+              <option value="PC6">PC6 (Admin PC)</option>
+              <option value="Server0">Server0 (DB Server)</option>
             </select>
             <span style="font-size: 0.78rem; color: var(--text-muted);">➔</span>
-            <select id="packetTargetSelect" class="form-select" style="padding: 0.3rem 0.6rem; font-size: 0.78rem; width: 150px;">
-              <option value="web_server">WEB Server (.10.10)</option>
-              <option value="db_server">Server0 DB (.10.12)</option>
-              <option value="audit_server">Server3 Audit (.10.13)</option>
-              <option value="router0">Router0 (.1.1)</option>
+            <select id="packetTargetSelect" class="form-select" style="padding: 0.3rem 0.6rem; font-size: 0.78rem; width: 160px;">
+              <option value="Server4">Server4 (Security CA)</option>
+              <option value="WEB Server">WEB Server (.10.10)</option>
+              <option value="Server0">Server0 DB (.10.12)</option>
+              <option value="Server3">Server3 Audit (.10.13)</option>
+              <option value="Router0">Router0 Gateway (.1.1)</option>
+              <option value="192.168.99.250">Offline IP (192.168.99.250)</option>
             </select>
             <button class="btn-primary" style="padding: 0.35rem 0.8rem; font-size: 0.78rem; width: auto;" onclick="sendCustomPacket()">
-              🚀 Ping Packet
+              🚀 Fire PDU Ping
             </button>
           </div>
         </div>
 
-        <div class="topology-container">
-          <canvas id="topologyCanvas"></canvas>
-
-          <div class="topo-legend">
-            <div class="legend-item">
-              <div class="legend-color" style="background: var(--zone-blue-border);"></div>
-              <span>Blue Zone: Server Farm</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color" style="background: var(--zone-red-border);"></div>
-              <span>Red Zone: Booth 1</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color" style="background: var(--zone-green-border);"></div>
-              <span>Green Zone: Booth 2</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color" style="background: var(--zone-pink-border);"></div>
-              <span>Pink Zone: Booth 3</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color" style="background: var(--zone-yellow-border);"></div>
-              <span>Yellow Zone: Central Admin</span>
-            </div>
-          </div>
+        <!-- Official Cisco Packet Tracer Interface Screen -->
+        <div style="border: 2px solid #3b82f6; border-radius: 12px; overflow: hidden; background: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.6); position: relative;">
+          <img src="img/cisco_topology.png" alt="Cisco Packet Tracer Network Topology Diagram" style="width: 100%; display: block; border-bottom: 2px solid #3b82f6;">
         </div>
 
-        <!-- Live Step-by-Step Packet Trace Stream Console -->
-        <div style="margin-top: 1rem; background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
+        <!-- Live Device Inspector & Cisco Command Prompt Output -->
+        <div style="margin-top: 1rem; background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <h4 style="color: #60a5fa; font-size: 0.9rem;">💡 Device Inspector & Cisco Command Prompt Output</h4>
-            <span class="badge badge-info" id="topoSelectedNodeBadge">Selected: None</span>
+            <h4 style="color: #60a5fa; font-size: 0.9rem;">💻 Cisco IOS Command Prompt Terminal & Ping Output</h4>
+            <span class="badge badge-info" id="topoSelectedNodeBadge">Status: Ready</span>
           </div>
           <div id="nodeDetailBox" style="font-family: monospace; font-size: 0.85rem; color: #d1d5db; line-height: 1.5;">
-            Click on any router, switch, or server above to open the Cisco Device Configuration Inspector...
+            Select source and destination devices above, then click <strong>Fire PDU Ping</strong> to simulate ICMP Echo Packets...
           </div>
         </div>
 
-        <!-- Cisco Packet Tracer Real-Time PDU Simulation Event List -->
-        <div style="margin-top: 1rem; background: rgba(15, 23, 42, 0.9); padding: 1rem; border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.3);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem;">
-            <h4 style="color: #60a5fa; font-size: 0.9rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-              <span>⚡</span> Cisco Packet Tracer Event List (PDU Ping Simulation Results)
-            </h4>
-            <div style="display: flex; gap: 0.5rem;">
-              <button class="btn-primary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; width: auto;" onclick="triggerTestPingSuccess()">
-                ✅ Test Successful Ping
+        <!-- Exact Cisco Packet Tracer Simulation PDU Window (Matching Official Cisco Layout) -->
+        <div style="margin-top: 1rem; background: #0f172a; padding: 1rem; border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.4);">
+          <!-- Cisco PDU Window Header Control Buttons -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.6rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+              <span style="font-size: 0.85rem; color: #60a5fa; font-weight: bold; display: flex; align-items: center; gap: 0.4rem;">
+                ⚙️ Cisco Simulation PDU Window
+              </span>
+              <span class="badge badge-info">Scenario 0</span>
+              <button class="btn-primary" style="padding: 0.2rem 0.5rem; font-size: 0.72rem; width: auto;" onclick="triggerTestPingSuccess()">
+                ✅ Add Successful Ping
               </button>
-              <button class="btn-danger" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; width: auto;" onclick="triggerTestPingFail()">
-                ❌ Test Failed Ping
+              <button class="btn-danger" style="padding: 0.2rem 0.5rem; font-size: 0.72rem; width: auto;" onclick="triggerTestPingFail()">
+                ❌ Add Failed Ping
+              </button>
+            </div>
+            <div style="display: flex; gap: 0.4rem;">
+              <button class="btn-secondary" style="padding: 0.2rem 0.6rem; font-size: 0.72rem; width: auto; background: rgba(255,255,255,0.1);" onclick="clearCiscoPduTable()">
+                🗑️ Clear PDU Window
               </button>
             </div>
           </div>
-          <div class="table-responsive" style="max-height: 220px;">
-            <table class="data-table" style="font-size: 0.8rem;">
+
+          <!-- Official Cisco Packet Tracer PDU Simulation List Table -->
+          <div class="table-responsive" style="max-height: 260px;">
+            <table class="data-table" style="font-size: 0.82rem; font-family: monospace;">
               <thead>
-                <tr>
-                  <th>PDU Event</th>
-                  <th>Source Device</th>
-                  <th>Destination Target</th>
-                  <th>Gateway Router</th>
-                  <th>Protocol</th>
-                  <th>RTT Latency</th>
-                  <th>Cisco Simulation Status</th>
+                <tr style="background: rgba(30, 41, 59, 0.9);">
+                  <th>Fire</th>
+                  <th>Last Status</th>
+                  <th>Source</th>
+                  <th>Destination</th>
+                  <th>Type</th>
+                  <th>Color</th>
+                  <th>Time(sec)</th>
+                  <th>Periodic</th>
+                  <th>Num</th>
+                  <th>Edit</th>
+                  <th>Delete</th>
                 </tr>
               </thead>
               <tbody id="ciscoSimulationTable">
                 <tr>
-                  <td colspan="7" style="text-align: center; color: var(--text-muted);">No PDU pings executed yet. Click 2 nodes above or use controls to ping!</td>
+                  <td>🔥</td>
+                  <td><span style="color:#10b981; font-weight:bold;">Successful</span></td>
+                  <td>Server0</td>
+                  <td>Server4</td>
+                  <td>ICMP</td>
+                  <td><span style="display:inline-block; width:12px; height:12px; background:#3b82f6; border-radius:2px;"></span></td>
+                  <td>0.000</td>
+                  <td>N</td>
+                  <td>0</td>
+                  <td style="color:#60a5fa; cursor:pointer;">(edit)</td>
+                  <td style="color:#ef4444; cursor:pointer;" onclick="this.parentElement.remove()">(delete)</td>
+                </tr>
+                <tr>
+                  <td>🔥</td>
+                  <td><span style="color:#10b981; font-weight:bold;">Successful</span></td>
+                  <td>PC0</td>
+                  <td>PC1</td>
+                  <td>ICMP</td>
+                  <td><span style="display:inline-block; width:12px; height:12px; background:#10b981; border-radius:2px;"></span></td>
+                  <td>0.000</td>
+                  <td>N</td>
+                  <td>1</td>
+                  <td style="color:#60a5fa; cursor:pointer;">(edit)</td>
+                  <td style="color:#ef4444; cursor:pointer;" onclick="this.parentElement.remove()">(delete)</td>
+                </tr>
+                <tr>
+                  <td>🔥</td>
+                  <td><span style="color:#10b981; font-weight:bold;">Successful</span></td>
+                  <td>PC2</td>
+                  <td>PC3</td>
+                  <td>ICMP</td>
+                  <td><span style="display:inline-block; width:12px; height:12px; background:#f59e0b; border-radius:2px;"></span></td>
+                  <td>0.000</td>
+                  <td>N</td>
+                  <td>2</td>
+                  <td style="color:#60a5fa; cursor:pointer;">(edit)</td>
+                  <td style="color:#ef4444; cursor:pointer;" onclick="this.parentElement.remove()">(delete)</td>
+                </tr>
+                <tr>
+                  <td>🔥</td>
+                  <td><span style="color:#10b981; font-weight:bold;">Successful</span></td>
+                  <td>PC4</td>
+                  <td>PC5</td>
+                  <td>ICMP</td>
+                  <td><span style="display:inline-block; width:12px; height:12px; background:#ec4899; border-radius:2px;"></span></td>
+                  <td>0.000</td>
+                  <td>N</td>
+                  <td>3</td>
+                  <td style="color:#60a5fa; cursor:pointer;">(edit)</td>
+                  <td style="color:#ef4444; cursor:pointer;" onclick="this.parentElement.remove()">(delete)</td>
+                </tr>
+                <tr>
+                  <td>🔥</td>
+                  <td><span style="color:#10b981; font-weight:bold;">Successful</span></td>
+                  <td>PC6</td>
+                  <td>PC8</td>
+                  <td>ICMP</td>
+                  <td><span style="display:inline-block; width:12px; height:12px; background:#8b5cf6; border-radius:2px;"></span></td>
+                  <td>0.000</td>
+                  <td>N</td>
+                  <td>4</td>
+                  <td style="color:#60a5fa; cursor:pointer;">(edit)</td>
+                  <td style="color:#ef4444; cursor:pointer;" onclick="this.parentElement.remove()">(delete)</td>
+                </tr>
+                <tr>
+                  <td>🔥</td>
+                  <td><span style="color:#ef4444; font-weight:bold;">Failed</span></td>
+                  <td>PC0</td>
+                  <td>192.168.99.250</td>
+                  <td>ICMP</td>
+                  <td><span style="display:inline-block; width:12px; height:12px; background:#ef4444; border-radius:2px;"></span></td>
+                  <td>0.000</td>
+                  <td>N</td>
+                  <td>5</td>
+                  <td style="color:#60a5fa; cursor:pointer;">(edit)</td>
+                  <td style="color:#ef4444; cursor:pointer;" onclick="this.parentElement.remove()">(delete)</td>
                 </tr>
               </tbody>
             </table>

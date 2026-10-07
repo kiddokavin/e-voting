@@ -162,144 +162,106 @@ function getSubnetSwitch(nodeId) {
   return 'mswitch0';
 }
 
-let pduCounter = 1000;
+let pduCounter = 5;
+
+function clearCiscoPduTable() {
+  const tbody = document.getElementById('ciscoSimulationTable');
+  if (tbody) tbody.innerHTML = '';
+  if (typeof showAlert === 'function') showAlert('Cisco PDU Simulation Window Cleared.', 'info');
+}
 
 function sendCustomPacket() {
   const srcId = document.getElementById('packetSourceSelect').value;
   const tgtId = document.getElementById('packetTargetSelect').value;
 
-  const src = topoNodes.find(n => n.id === srcId);
-  const tgt = topoNodes.find(n => n.id === tgtId);
-
-  if (src && tgt) {
-    pingSourceNode = src;
-    pingTargetNode = tgt;
-    drawTopology();
-    executeRouterPing(src, tgt, false);
-  }
+  const isFailed = tgtId.includes('192.168.99.250');
+  executeRouterPing(srcId, tgtId, isFailed);
 }
 
 function triggerTestPingSuccess() {
-  const src = topoNodes.find(n => n.id === 'pc0');
-  const tgt = topoNodes.find(n => n.id === 'web_server');
-  pingSourceNode = src;
-  pingTargetNode = tgt;
-  drawTopology();
-  executeRouterPing(src, tgt, false);
+  executeRouterPing('PC0', 'Server4', false);
 }
 
 function triggerTestPingFail() {
-  const src = topoNodes.find(n => n.id === 'pc0');
-  const tgt = { id: 'offline_target', name: 'Unknown Target', ip: '192.168.99.250' };
-  pingSourceNode = src;
-  pingTargetNode = tgt;
-  drawTopology();
-  executeRouterPing(src, tgt, true);
+  executeRouterPing('PC0', '192.168.99.250', true);
 }
 
-function executeRouterPing(src, tgt, forceFail = false) {
-  pduCounter++;
-  const pduId = `PDU_${pduCounter}`;
-
+function executeRouterPing(srcName, tgtName, forceFail = false) {
   if (forceFail) {
-    // Failed Ping Simulation
-    const failPath = [src.id, getSubnetSwitch(src.id), 'mswitch0', 'router0'];
-    animatePacketRoute(failPath, '#ef4444', 0.12, 80);
-
     updateDetailBox(`
       <div style="background:#0f172a; padding:12px; border-radius:8px; border:1px solid #ef4444; font-family:monospace;">
         <div style="color:#ef4444; font-weight:bold; font-size:0.9rem; margin-bottom:8px;">
-          ❌ CISCO IOS COMMAND PROMPT [${src.name} - ${src.ip}]:
+          ❌ CISCO IOS COMMAND PROMPT [${srcName}]:
         </div>
         <div style="color:#94a3b8; font-size:0.8rem;">
-          > ping ${tgt.ip}<br><br>
-          Pinging ${tgt.ip} with 32 bytes of data:<br>
+          > ping ${tgtName}<br><br>
+          Pinging ${tgtName} with 32 bytes of data:<br>
           <span style="color:#ef4444;">Request timed out.</span><br>
           <span style="color:#ef4444;">Request timed out.</span><br>
           <span style="color:#ef4444;">Request timed out.</span><br>
           <span style="color:#ef4444;">Request timed out.</span><br><br>
-          Ping statistics for ${tgt.ip}:<br>
+          Ping statistics for ${tgtName}:<br>
           &nbsp;&nbsp;&nbsp;&nbsp;Packets: Sent = 4, Received = 0, Lost = 4 (100% loss)<br>
         </div>
         <div style="margin-top:10px; padding:6px 10px; background:rgba(239,68,68,0.2); border-radius:4px; color:#ef4444; font-weight:bold; font-size:0.85rem;">
-          CISCO SIMULATION STATUS: FAILED ❌ (Target Host Unreachable / ACL Dropped)
+          CISCO SIMULATION RESULT: FAILED ❌ (Request Timed Out / Host Unreachable)
         </div>
       </div>
     `);
 
-    addCiscoSimulationEvent(pduId, `${src.name} (${src.ip})`, `${tgt.name} (${tgt.ip})`, 'Router0 (.1.1)', 'ICMP Echo', 'Timeout', '<span class="badge badge-danger">❌ Failed</span>');
-    showAlert(`❌ Cisco Ping FAILED: ${src.name} ➔ ${tgt.ip} (Request Timed Out)`, 'error');
-    return;
+    addCiscoSimulationEvent('Failed', false, srcName, tgtName, 'ICMP', '#ef4444');
+    if (typeof showAlert === 'function') showAlert(`❌ Cisco PDU Ping: ${srcName} ➔ ${tgtName} | Status: FAILED`, 'error');
+  } else {
+    updateDetailBox(`
+      <div style="background:#0f172a; padding:12px; border-radius:8px; border:1px solid #10b981; font-family:monospace;">
+        <div style="color:#60a5fa; font-weight:bold; font-size:0.9rem; margin-bottom:8px;">
+          💻 CISCO IOS COMMAND PROMPT [${srcName}]:
+        </div>
+        <div style="color:#d1d5db; font-size:0.8rem;">
+          > ping ${tgtName}<br><br>
+          Pinging ${tgtName} with 32 bytes of data:<br>
+          <span style="color:#10b981;">Reply from ${tgtName}: bytes=32 time=2ms TTL=128</span><br>
+          <span style="color:#10b981;">Reply from ${tgtName}: bytes=32 time=1ms TTL=128</span><br>
+          <span style="color:#10b981;">Reply from ${tgtName}: bytes=32 time=3ms TTL=128</span><br>
+          <span style="color:#10b981;">Reply from ${tgtName}: bytes=32 time=2ms TTL=128</span><br><br>
+          Ping statistics for ${tgtName}:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;Packets: Sent = 4, Received = 4, Lost = 0 (0% loss),<br>
+          Approximate round trip times in milli-seconds:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;Minimum = 1ms, Maximum = 3ms, Average = 2ms<br>
+        </div>
+        <div style="margin-top:10px; padding:6px 10px; background:rgba(16,185,129,0.2); border-radius:4px; color:#10b981; font-weight:bold; font-size:0.85rem;">
+          CISCO SIMULATION RESULT: SUCCESSFUL ✅ (Routed via Router0 Gateway 192.168.1.1)
+        </div>
+      </div>
+    `);
+
+    addCiscoSimulationEvent('Successful', true, srcName, tgtName, 'ICMP', '#10b981');
+    if (typeof showAlert === 'function') showAlert(`✅ Cisco PDU Ping: ${srcName} ➔ ${tgtName} | Status: SUCCESSFUL`, 'success');
   }
-
-  // Successful Ping Simulation
-  const srcSwitch = getSubnetSwitch(src.id);
-  const tgtSwitch = getSubnetSwitch(tgt.id);
-
-  let requestPath = [src.id];
-  if (srcSwitch !== src.id) requestPath.push(srcSwitch);
-  requestPath.push('mswitch0', 'router0'); // Goes through Router0 Gateway!
-  if (tgtSwitch !== tgt.id) requestPath.push(tgtSwitch);
-  requestPath.push(tgt.id);
-
-  let replyPath = [tgt.id];
-  if (tgtSwitch !== tgt.id) replyPath.push(tgtSwitch);
-  replyPath.push('mswitch0', 'router0');
-  if (srcSwitch !== src.id) replyPath.push(srcSwitch);
-  replyPath.push(src.id);
-
-  // High-Speed Packet Animation: 0.12 speed & 80ms delay
-  animatePacketRoute(requestPath, '#3b82f6', 0.12, 80);
-
-  setTimeout(() => {
-    animatePacketRoute(replyPath, '#10b981', 0.12, 80);
-  }, requestPath.length * 80);
-
-  updateDetailBox(`
-    <div style="background:#0f172a; padding:12px; border-radius:8px; border:1px solid #10b981; font-family:monospace;">
-      <div style="color:#60a5fa; font-weight:bold; font-size:0.9rem; margin-bottom:8px;">
-        💻 CISCO IOS COMMAND PROMPT [${src.name} - ${src.ip}]:
-      </div>
-      <div style="color:#d1d5db; font-size:0.8rem;">
-        > ping ${tgt.ip}<br><br>
-        Pinging ${tgt.ip} with 32 bytes of data:<br>
-        <span style="color:#10b981;">Reply from ${tgt.ip}: bytes=32 time=2ms TTL=128</span><br>
-        <span style="color:#10b981;">Reply from ${tgt.ip}: bytes=32 time=1ms TTL=128</span><br>
-        <span style="color:#10b981;">Reply from ${tgt.ip}: bytes=32 time=3ms TTL=128</span><br>
-        <span style="color:#10b981;">Reply from ${tgt.ip}: bytes=32 time=2ms TTL=128</span><br><br>
-        Ping statistics for ${tgt.ip}:<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;Packets: Sent = 4, Received = 4, Lost = 0 (0% loss),<br>
-        Approximate round trip times in milli-seconds:<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;Minimum = 1ms, Maximum = 3ms, Average = 2ms<br>
-      </div>
-      <div style="margin-top:10px; padding:6px 10px; background:rgba(16,185,129,0.2); border-radius:4px; color:#10b981; font-weight:bold; font-size:0.85rem;">
-        CISCO SIMULATION STATUS: SUCCESSFUL ✅ (Routed via Router0 Gateway 192.168.1.1)
-      </div>
-    </div>
-  `);
-
-  addCiscoSimulationEvent(pduId, `${src.name} (${src.ip})`, `${tgt.name} (${tgt.ip})`, 'Router0 (.1.1)', 'ICMP Echo', '2 ms', '<span class="badge badge-success">✅ Successful</span>');
-  showAlert(`✅ Cisco Ping SUCCESSFUL: ${src.name} ➔ Router0 ➔ ${tgt.name} (4/4 Received)`, 'success');
 }
 
-function addCiscoSimulationEvent(pduId, src, tgt, gateway, protocol, rtt, statusBadge) {
+function addCiscoSimulationEvent(statusText, isSuccess, srcName, tgtName, type = 'ICMP', colorHex = '#3b82f6') {
   const tbody = document.getElementById('ciscoSimulationTable');
   if (!tbody) return;
 
-  // Remove empty placeholder row if present
-  if (tbody.children.length === 1 && tbody.children[0].cells.length === 1) {
-    tbody.innerHTML = '';
-  }
+  pduCounter++;
+  const num = pduCounter;
+  const statusColor = isSuccess ? '#10b981' : '#ef4444';
+  const statusStr = isSuccess ? 'Successful' : 'Failed';
 
   const tr = document.createElement('tr');
   tr.innerHTML = `
-    <td><code style="color:#60a5fa;">${pduId}</code></td>
-    <td><strong>${src}</strong></td>
-    <td><strong>${tgt}</strong></td>
-    <td><code style="color:#f59e0b;">${gateway}</code></td>
-    <td><span class="badge badge-info">${protocol}</span></td>
-    <td>${rtt}</td>
-    <td>${statusBadge}</td>
+    <td>🔥</td>
+    <td><span style="color:${statusColor}; font-weight:bold;">${statusStr}</span></td>
+    <td>${srcName}</td>
+    <td>${tgtName}</td>
+    <td>${type}</td>
+    <td><span style="display:inline-block; width:12px; height:12px; background:${colorHex}; border-radius:2px;"></span></td>
+    <td>0.000</td>
+    <td>N</td>
+    <td>${num}</td>
+    <td style="color:#60a5fa; cursor:pointer;">(edit)</td>
+    <td style="color:#ef4444; cursor:pointer;" onclick="this.parentElement.remove()">(delete)</td>
   `;
 
   tbody.insertBefore(tr, tbody.firstChild);
