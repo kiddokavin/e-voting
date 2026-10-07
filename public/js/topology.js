@@ -1,381 +1,274 @@
-// Cisco Packet Tracer Interactive Canvas Visualizer
-// Ultra-Fast Packet Animation & Instant 2-Node Router0 Ping Simulation
-let canvas, ctx;
-let activePackets = [];
-let pingSourceNode = null;
-let pingTargetNode = null;
-
-const topoNodes = [
+// Authentic Cisco Packet Tracer Network Topology Simulation Engine
+const nodes = [
   // Core Layer
-  { id: 'router0', name: 'Router0', model: 'Cisco 2911 ISR Router', type: 'ROUTER', ip: '192.168.1.1', mask: '255.255.255.0', mac: '0001.C4A1.9001', x: 600, y: 40, icon: '🌐' },
-  { id: 'mswitch0', name: 'Multilayer Switch0', model: 'Cisco Catalyst 3560-24PS (L3)', type: 'CORE_SWITCH', ip: '192.168.1.2', mask: '255.255.255.0', mac: '0002.4A9B.1102', x: 600, y: 130, icon: '🔀' },
+  { id: 'router0', label: 'Router0', ip: '192.168.1.1', type: 'ROUTER', zone: 'Core', x: 500, y: 65, ports: ['Gi0/0', 'Gi0/1'] },
+  { id: 'mswitch0', label: 'Multilayer Switch0 (3560)', ip: '192.168.1.2', type: 'CORE_SWITCH', zone: 'Core', x: 500, y: 155, ports: ['Fa0/1', 'Fa0/2', 'Fa0/3', 'Fa0/4', 'Fa0/5'] },
 
-  // Server Farm (Blue Zone - VLAN 10)
-  { id: 'switch0', name: 'Switch0', model: 'Cisco Catalyst 2960-24TT', type: 'SWITCH', ip: '192.168.10.1', mask: '255.255.255.0', mac: '00D0.BA11.0001', x: 260, y: 220, icon: '🎛️' },
-  { id: 'db_server', name: 'Server0 (DB Server)', model: 'Cisco Server-PT', type: 'SERVER', ip: '192.168.10.12', mask: '255.255.255.0', mac: '0060.702B.DB01', x: 180, y: 310, icon: '🗄️' },
-  { id: 'web_server', name: 'WEB Server', model: 'Cisco Server-PT', type: 'SERVER', ip: '192.168.10.10', mask: '255.255.255.0', mac: '0060.702B.WEB1', x: 340, y: 310, icon: '🖥️' },
-  { id: 'dns_server', name: 'DNS Server', model: 'Cisco Server-PT', type: 'SERVER', ip: '192.168.10.11', mask: '255.255.255.0', mac: '0060.702B.DNS1', x: 180, y: 420, icon: '🌍' },
-  { id: 'audit_server', name: 'Server3 (Audit)', model: 'Cisco Server-PT', type: 'SERVER', ip: '192.168.10.13', mask: '255.255.255.0', mac: '0060.702B.AUD3', x: 340, y: 420, icon: '📊' },
-  { id: 'sec_server', name: 'Server4 (Security)', model: 'Cisco Server-PT', type: 'SERVER', ip: '192.168.10.14', mask: '255.255.255.0', mac: '0060.702B.SEC4', x: 260, y: 480, icon: '🛡️' },
+  // VLAN 10 - Server Farm (Blue Zone)
+  { id: 'switch0', label: 'Switch0 (Server Switch)', ip: '192.168.10.1', type: 'SWITCH', zone: 'VLAN 10', x: 500, y: 255, ports: ['Gi0/1', 'Fa0/1', 'Fa0/2', 'Fa0/3', 'Fa0/4', 'Fa0/5'] },
+  { id: 'web_server', label: 'WEB Server', ip: '192.168.10.10', type: 'SERVER', zone: 'VLAN 10', x: 340, y: 355 },
+  { id: 'dns_server', label: 'DNS Server', ip: '192.168.10.11', type: 'SERVER', zone: 'VLAN 10', x: 420, y: 355 },
+  { id: 'db_server', label: 'Database Server0', ip: '192.168.10.12', type: 'SERVER', zone: 'VLAN 10', x: 500, y: 355 },
+  { id: 'audit_server', label: 'Audit Server3', ip: '192.168.10.13', type: 'SERVER', zone: 'VLAN 10', x: 580, y: 355 },
+  { id: 'sec_server', label: 'Security CA Server4', ip: '192.168.10.14', type: 'SERVER', zone: 'VLAN 10', x: 660, y: 355 },
 
-  // Booth 1 (Red Zone - VLAN 20)
-  { id: 'switch1', name: 'Switch1', model: 'Cisco Catalyst 2960-24TT', type: 'SWITCH', ip: '192.168.20.1', mask: '255.255.255.0', mac: '00E0.8F11.0002', x: 490, y: 260, icon: '🎛️' },
-  { id: 'pc0', name: 'PC0 (Booth 1)', model: 'Generic PC-PT', type: 'PC', ip: '192.168.20.10', mask: '255.255.255.0', mac: '0001.42A3.PC01', x: 450, y: 400, icon: '💻' },
-  { id: 'pc1', name: 'PC1 (Booth 1)', model: 'Generic PC-PT', type: 'PC', ip: '192.168.20.11', mask: '255.255.255.0', mac: '0001.42A3.PC02', x: 530, y: 400, icon: '💻' },
+  // VLAN 20 - Booth 1 (Red Zone)
+  { id: 'switch1', label: 'Switch1 (Booth 1)', ip: '192.168.20.1', type: 'SWITCH', zone: 'VLAN 20', x: 160, y: 225, ports: ['Gi0/1', 'Fa0/1', 'Fa0/2'] },
+  { id: 'pc0', label: 'PC0 (Booth 1 Terminal A)', ip: '192.168.20.10', type: 'PC', zone: 'VLAN 20', x: 100, y: 320 },
+  { id: 'pc1', label: 'PC1 (Booth 1 Terminal B)', ip: '192.168.20.11', type: 'PC', zone: 'VLAN 20', x: 220, y: 320 },
 
-  // Booth 2 (Green Zone - VLAN 30)
-  { id: 'switch2', name: 'Switch2', model: 'Cisco Catalyst 2960-24TT', type: 'SWITCH', ip: '192.168.30.1', mask: '255.255.255.0', mac: '00E0.8F11.0003', x: 670, y: 260, icon: '🎛️' },
-  { id: 'pc2', name: 'PC2 (Booth 2)', model: 'Generic PC-PT', type: 'PC', ip: '192.168.30.10', mask: '255.255.255.0', mac: '0001.42A3.PC03', x: 630, y: 400, icon: '💻' },
-  { id: 'pc3', name: 'PC3 (Booth 2)', model: 'Generic PC-PT', type: 'PC', ip: '192.168.30.11', mask: '255.255.255.0', mac: '0001.42A3.PC04', x: 710, y: 400, icon: '💻' },
+  // VLAN 30 - Booth 2 (Green Zone)
+  { id: 'switch2', label: 'Switch2 (Booth 2)', ip: '192.168.30.1', type: 'SWITCH', zone: 'VLAN 30', x: 840, y: 225, ports: ['Gi0/1', 'Fa0/1', 'Fa0/2'] },
+  { id: 'pc2', label: 'PC2 (Booth 2 Terminal A)', ip: '192.168.30.10', type: 'PC', zone: 'VLAN 30', x: 780, y: 320 },
+  { id: 'pc3', label: 'PC3 (Booth 2 Terminal B)', ip: '192.168.30.11', type: 'PC', zone: 'VLAN 30', x: 900, y: 320 },
 
-  // Booth 3 (Pink Zone - VLAN 40)
-  { id: 'switch3', name: 'Switch3', model: 'Cisco Catalyst 2960-24TT', type: 'SWITCH', ip: '192.168.40.1', mask: '255.255.255.0', mac: '00E0.8F11.0004', x: 850, y: 260, icon: '🎛️' },
-  { id: 'pc4', name: 'PC4 (Booth 3)', model: 'Generic PC-PT', type: 'PC', ip: '192.168.40.10', mask: '255.255.255.0', mac: '0001.42A3.PC05', x: 810, y: 400, icon: '💻' },
-  { id: 'pc5', name: 'PC5 (Booth 3)', model: 'Generic PC-PT', type: 'PC', ip: '192.168.40.11', mask: '255.255.255.0', mac: '0001.42A3.PC06', x: 890, y: 400, icon: '💻' },
-
-  // Admin Monitoring (Yellow Zone - VLAN 50)
-  { id: 'switch4', name: 'Switch4', model: 'Cisco Catalyst 2960-24TT', type: 'SWITCH', ip: '192.168.50.1', mask: '255.255.255.0', mac: '00E0.8F11.0005', x: 1040, y: 260, icon: '🎛️' },
-  { id: 'pc6', name: 'PC6 (Monitoring)', model: 'Generic PC-PT', type: 'PC', ip: '192.168.50.10', mask: '255.255.255.0', mac: '0001.42A3.PC07', x: 990, y: 390, icon: '💻' },
-  { id: 'pc7', name: 'PC7 (Monitoring)', model: 'Generic PC-PT', type: 'PC', ip: '192.168.50.11', mask: '255.255.255.0', mac: '0001.42A3.PC08', x: 1040, y: 470, icon: '💻' },
-  { id: 'pc8', name: 'PC8 (Officer PC)', model: 'Generic PC-PT', type: 'PC', ip: '192.168.50.12', mask: '255.255.255.0', mac: '0001.42A3.PC09', x: 1090, y: 390, icon: '💻' }
+  // VLAN 50 - Admin Control Station (Yellow Zone)
+  { id: 'switch4', label: 'Switch4 (Admin Switch)', ip: '192.168.50.1', type: 'SWITCH', zone: 'VLAN 50', x: 500, y: 445, ports: ['Gi0/1', 'Fa0/1'] },
+  { id: 'pc8', label: 'PC8 (Election Officer Terminal)', ip: '192.168.50.12', type: 'PC', zone: 'VLAN 50', x: 500, y: 515 }
 ];
 
-const topoLinks = [
-  // Core Layer Links
-  { from: 'router0', to: 'mswitch0' },
-  { from: 'mswitch0', to: 'switch0' },
-  { from: 'mswitch0', to: 'switch1' },
-  { from: 'mswitch0', to: 'switch2' },
-  { from: 'mswitch0', to: 'switch3' },
-  { from: 'mswitch0', to: 'switch4' },
+const links = [
+  { src: 'router0', dst: 'mswitch0', label1: 'Gi0/0', label2: 'Gi0/1' },
+  { src: 'mswitch0', dst: 'switch0', label1: 'Fa0/1', label2: 'Gi0/1' },
+  { src: 'mswitch0', dst: 'switch1', label1: 'Fa0/2', label2: 'Gi0/1' },
+  { src: 'mswitch0', dst: 'switch2', label1: 'Fa0/3', label2: 'Gi0/1' },
+  { src: 'mswitch0', dst: 'switch4', label1: 'Fa0/5', label2: 'Gi0/1' },
 
-  // Server Farm Links
-  { from: 'switch0', to: 'db_server' },
-  { from: 'switch0', to: 'web_server' },
-  { from: 'switch0', to: 'dns_server' },
-  { from: 'switch0', to: 'audit_server' },
-  { from: 'switch0', to: 'sec_server' },
+  { src: 'switch0', dst: 'web_server', label1: 'Fa0/1', label2: 'Fa0' },
+  { src: 'switch0', dst: 'dns_server', label1: 'Fa0/2', label2: 'Fa0' },
+  { src: 'switch0', dst: 'db_server', label1: 'Fa0/3', label2: 'Fa0' },
+  { src: 'switch0', dst: 'audit_server', label1: 'Fa0/4', label2: 'Fa0' },
+  { src: 'switch0', dst: 'sec_server', label1: 'Fa0/5', label2: 'Fa0' },
 
-  // Booth 1 Links
-  { from: 'switch1', to: 'pc0' },
-  { from: 'switch1', to: 'pc1' },
-  { from: 'switch1', to: 'switch2' },
+  { src: 'switch1', dst: 'pc0', label1: 'Fa0/1', label2: 'Fa0' },
+  { src: 'switch1', dst: 'pc1', label1: 'Fa0/2', label2: 'Fa0' },
 
-  // Booth 2 Links
-  { from: 'switch2', to: 'pc2' },
-  { from: 'switch2', to: 'pc3' },
+  { src: 'switch2', dst: 'pc2', label1: 'Fa0/1', label2: 'Fa0' },
+  { src: 'switch2', dst: 'pc3', label1: 'Fa0/2', label2: 'Fa0' },
 
-  // Booth 3 Links
-  { from: 'switch3', to: 'pc4' },
-  { from: 'switch3', to: 'pc5' },
-
-  // Admin Links
-  { from: 'switch4', to: 'pc6' },
-  { from: 'switch4', to: 'pc7' },
-  { from: 'switch4', to: 'pc8' }
+  { src: 'switch4', dst: 'pc8', label1: 'Fa0/1', label2: 'Fa0' }
 ];
 
-function resizeCanvas() {
-  if (!canvas) return;
-  const parent = canvas.parentElement;
-  const w = (parent && parent.clientWidth) ? parent.clientWidth : 1200;
-  const h = (parent && parent.clientHeight) ? parent.clientHeight : 580;
-  canvas.width = w > 200 ? w : 1200;
-  canvas.height = h > 200 ? h : 580;
-  drawTopology();
-}
+let canvas, ctx;
+let animatedPackets = [];
 
 function initTopologyCanvas() {
   canvas = document.getElementById('topologyCanvas');
   if (!canvas) return;
   ctx = canvas.getContext('2d');
 
-  window.addEventListener('resize', resizeCanvas);
   resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  setInterval(spawnPacket, 2200);
+  requestAnimationFrame(drawTopology);
+}
 
-  // Canvas Click Handler: Instant 2-Node Selection
-  canvas.addEventListener('click', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
-    const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
+function resizeCanvas() {
+  if (!canvas) return;
+  const parentWidth = canvas.parentElement.clientWidth;
+  canvas.width = Math.max(parentWidth, 960);
+  canvas.height = 580;
+}
 
-    const clicked = topoNodes.find(n => {
-      const dist = Math.hypot(n.x - clickX, n.y - clickY);
-      return dist < 24;
+function spawnPacket() {
+  const sources = ['pc0', 'pc1', 'pc2', 'pc3', 'pc8'];
+  const srcId = sources[Math.floor(Math.random() * sources.length)];
+  const route = getRouteForSource(srcId);
+
+  if (route && route.length > 1) {
+    animatedPackets.push({
+      route,
+      segmentIndex: 0,
+      progress: 0,
+      speed: 0.03
     });
-
-    if (clicked) {
-      handleNodeClick(clicked);
-      drawTopology();
-    }
-  });
-
-  function animLoop() {
-    updatePackets();
-    drawTopology();
-    requestAnimationFrame(animLoop);
-  }
-  requestAnimationFrame(animLoop);
-}
-
-function handleNodeClick(node) {
-  if (!pingSourceNode || (pingSourceNode && pingTargetNode)) {
-    pingSourceNode = node;
-    pingTargetNode = null;
-
-    updateDetailBox(`
-      <div style="color: #60a5fa; font-weight: bold;">
-        📍 Source Selected: ${node.name} (${node.ip})
-      </div>
-      <div style="color: #f59e0b; margin-top: 0.2rem;">
-        👉 Now click 2nd Target Node to Ping instantly...
-      </div>
-    `);
-
-    const badge = document.getElementById('topoSelectedNodeBadge');
-    if (badge) badge.textContent = `Source: ${node.name}`;
-
-    showAlert(`📍 Source '${node.name}' selected. Click target node!`, 'info');
-  } 
-  else if (pingSourceNode && !pingTargetNode) {
-    if (pingSourceNode.id === node.id) {
-      showAlert('Please select a DIFFERENT target node!', 'warning');
-      return;
-    }
-
-    pingTargetNode = node;
-
-    const badge = document.getElementById('topoSelectedNodeBadge');
-    if (badge) badge.textContent = `Ping: ${pingSourceNode.name} ➔ ${pingTargetNode.name}`;
-
-    executeRouterPing(pingSourceNode, pingTargetNode);
   }
 }
 
-function getSubnetSwitch(nodeId) {
-  if (['pc0', 'pc1'].includes(nodeId)) return 'switch1';
-  if (['pc2', 'pc3'].includes(nodeId)) return 'switch2';
-  if (['pc4', 'pc5'].includes(nodeId)) return 'switch3';
-  if (['pc6', 'pc7', 'pc8'].includes(nodeId)) return 'switch4';
-  if (['db_server', 'web_server', 'dns_server', 'audit_server', 'sec_server'].includes(nodeId)) return 'switch0';
-  if (nodeId.startsWith('switch')) return nodeId;
-  return 'mswitch0';
-}
-
-function executeRouterPing(src, tgt) {
-  const srcSwitch = getSubnetSwitch(src.id);
-  const tgtSwitch = getSubnetSwitch(tgt.id);
-
-  let requestPath = [src.id];
-  if (srcSwitch !== src.id) requestPath.push(srcSwitch);
-  requestPath.push('mswitch0', 'router0'); // Goes to Router0 Gateway!
-  if (tgtSwitch !== tgt.id) requestPath.push(tgtSwitch);
-  requestPath.push(tgt.id);
-
-  let replyPath = [tgt.id];
-  if (tgtSwitch !== tgt.id) replyPath.push(tgtSwitch);
-  replyPath.push('mswitch0', 'router0');
-  if (srcSwitch !== src.id) replyPath.push(srcSwitch);
-  replyPath.push(src.id);
-
-  // High-Speed Packet Animation: 0.12 speed & 80ms delay (3x faster!)
-  animatePacketRoute(requestPath, '#3b82f6', 0.12, 80);
-
-  setTimeout(() => {
-    animatePacketRoute(replyPath, '#10b981', 0.12, 80);
-  }, requestPath.length * 80);
-
-  updateDetailBox(`
-    <div style="color: #10b981; font-weight: bold; margin-bottom: 0.3rem;">
-      📡 ICMP Echo Ping: ${src.name} (${src.ip}) ➔ Router0 (.1.1) ➔ ${tgt.name} (${tgt.ip})
-    </div>
-    <div style="margin-bottom: 0.2rem; font-size: 0.8rem; color: #60a5fa;">
-      <strong>Request:</strong> ${requestPath.map(id => { const n = topoNodes.find(item => item.id === id); return n ? n.name : id; }).join(' ➔ ')}
-    </div>
-    <div style="font-size: 0.8rem; color: #34d399;">
-      <strong>Reply:</strong> ${replyPath.map(id => { const n = topoNodes.find(item => item.id === id); return n ? n.name : id; }).join(' ➔ ')}
-    </div>
-    <div style="color: #9ca3af; font-size: 0.75rem; margin-top: 0.3rem;">
-      RTT = 1ms | Packets: 4 Sent, 4 Received | Router0 Gateway Active
-    </div>
-  `);
-
-  showAlert(`⚡ Instant Ping: ${src.name} ➔ Router0 Gateway ➔ ${tgt.name}!`, 'success');
-}
-
-function updateDetailBox(html) {
-  const box = document.getElementById('nodeDetailBox');
-  if (box) box.innerHTML = html;
+function getRouteForSource(srcId) {
+  if (srcId === 'pc0' || srcId === 'pc1') {
+    const sw = 'switch1';
+    return ['pc0', sw, 'mswitch0', 'switch0', 'web_server', 'sec_server', 'db_server', 'audit_server'];
+  } else if (srcId === 'pc2' || srcId === 'pc3') {
+    return ['pc2', 'switch2', 'mswitch0', 'switch0', 'web_server', 'sec_server', 'db_server', 'audit_server'];
+  } else {
+    return ['pc8', 'switch4', 'mswitch0', 'switch0', 'audit_server'];
+  }
 }
 
 function drawTopology() {
-  if (!ctx || !canvas) return;
+  if (!ctx) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Subnet Background Boxes
-  drawZoneBox(130, 180, 260, 340, 'rgba(59, 130, 246, 0.12)', '#3b82f6', 'SERVER FARM (VLAN 10)');
-  drawZoneBox(415, 230, 150, 250, 'rgba(239, 68, 68, 0.12)', '#ef4444', 'BOOTH 1 (VLAN 20)');
-  drawZoneBox(595, 230, 150, 250, 'rgba(16, 185, 129, 0.12)', '#10b981', 'BOOTH 2 (VLAN 30)');
-  drawZoneBox(775, 230, 150, 250, 'rgba(236, 72, 153, 0.12)', '#ec4899', 'BOOTH 3 (VLAN 40)');
-  drawZoneBox(955, 230, 175, 280, 'rgba(245, 158, 11, 0.12)', '#f59e0b', 'ADMIN MONITORING (VLAN 50)');
+  drawGrid();
+  drawSubnetZones();
 
-  // Link Cables
-  topoLinks.forEach(link => {
-    const fromNode = topoNodes.find(n => n.id === link.from);
-    const toNode = topoNodes.find(n => n.id === link.to);
-    if (!fromNode || !toNode) return;
-
-    ctx.beginPath();
-    ctx.moveTo(fromNode.x, fromNode.y);
-    ctx.lineTo(toNode.x, toNode.y);
-    ctx.strokeStyle = '#374151';
-    ctx.lineWidth = 2;
-    if (link.from === 'switch1' && link.to === 'switch2') {
-      ctx.setLineDash([4, 4]);
-      ctx.strokeStyle = '#f59e0b';
-    } else {
-      ctx.setLineDash([]);
-    }
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    drawLinkLed(fromNode.x, fromNode.y, toNode.x, toNode.y);
-  });
-
-  // Device Nodes
-  topoNodes.forEach(node => {
-    const isSource = pingSourceNode && pingSourceNode.id === node.id;
-    const isTarget = pingTargetNode && pingTargetNode.id === node.id;
-
-    if (isSource) {
-      ctx.beginPath();
-      ctx.arc(node.x, node.y, 28, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(59, 130, 246, 0.4)';
-      ctx.fill();
-      ctx.strokeStyle = '#60a5fa';
+  links.forEach(link => {
+    const n1 = nodes.find(n => n.id === link.src);
+    const n2 = nodes.find(n => n.id === link.dst);
+    if (n1 && n2) {
+      ctx.strokeStyle = '#374151';
       ctx.lineWidth = 3;
-      ctx.stroke();
-    }
-
-    if (isTarget) {
       ctx.beginPath();
-      ctx.arc(node.x, node.y, 28, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(16, 185, 129, 0.4)';
-      ctx.fill();
-      ctx.strokeStyle = '#34d399';
-      ctx.lineWidth = 3;
+      ctx.moveTo(n1.x, n1.y);
+      ctx.lineTo(n2.x, n2.y);
       ctx.stroke();
+
+      drawLinkLED(n1, n2, link.label1, 0.15);
+      drawLinkLED(n2, n1, link.label2, 0.15);
     }
-
-    ctx.beginPath();
-    ctx.arc(node.x, node.y, 20, 0, Math.PI * 2);
-    ctx.fillStyle = '#1e293b';
-    ctx.fill();
-    ctx.strokeStyle = isSource ? '#60a5fa' : (isTarget ? '#34d399' : '#475569');
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    ctx.font = '16px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(node.icon, node.x, node.y);
-
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillStyle = isSource ? '#60a5fa' : (isTarget ? '#34d399' : '#e2e8f0');
-    ctx.fillText(node.name, node.x, node.y + 32);
-
-    ctx.font = '9px monospace';
-    ctx.fillStyle = '#94a3b8';
-    ctx.fillText(node.ip, node.x, node.y + 44);
   });
 
-  // Animated Packets
-  activePackets.forEach(pkt => {
-    ctx.beginPath();
-    ctx.arc(pkt.currentX, pkt.currentY, 6, 0, Math.PI * 2);
-    ctx.fillStyle = pkt.color || '#10b981';
-    ctx.fill();
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
+  animatedPackets.forEach((p, idx) => {
+    const nCurr = nodes.find(n => n.id === p.route[p.segmentIndex]);
+    const nNext = nodes.find(n => n.id === p.route[p.segmentIndex + 1]);
 
-    ctx.beginPath();
-    ctx.arc(pkt.currentX, pkt.currentY, 10, 0, Math.PI * 2);
-    ctx.strokeStyle = pkt.color || 'rgba(16, 185, 129, 0.4)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    if (nCurr && nNext) {
+      p.progress += p.speed;
+      const curX = nCurr.x + (nNext.x - nCurr.x) * p.progress;
+      const curY = nNext.y ? nCurr.y + (nNext.y - nCurr.y) * p.progress : nCurr.y;
+
+      ctx.fillStyle = '#10b981';
+      ctx.shadowColor = '#10b981';
+      ctx.shadowBlur = 12;
+      ctx.fillRect(curX - 7, curY - 5, 14, 10);
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(curX - 7, curY - 5, 14, 10);
+      ctx.shadowBlur = 0;
+
+      if (p.progress >= 1) {
+        p.progress = 0;
+        p.segmentIndex += 1;
+        if (p.segmentIndex >= p.route.length - 1) {
+          animatedPackets.splice(idx, 1);
+        }
+      }
+    }
   });
+
+  nodes.forEach(n => {
+    drawCiscoDeviceNode(n);
+  });
+
+  requestAnimationFrame(drawTopology);
 }
 
-function drawZoneBox(x, y, w, h, bg, border, label) {
+function drawGrid() {
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+  ctx.lineWidth = 1;
+  const step = 30;
+  for (let x = 0; x < canvas.width; x += step) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+  }
+  for (let y = 0; y < canvas.height; y += step) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+  }
+}
+
+function drawSubnetZones() {
+  drawZoneBox(310, 240, 430, 160, 'rgba(59, 130, 246, 0.08)', '#3b82f6', 'VLAN 10 - Server Farm Subnet (192.168.10.0/24)');
+  drawZoneBox(60, 190, 220, 160, 'rgba(239, 68, 68, 0.08)', '#ef4444', 'VLAN 20 - Booth 1 (192.168.20.0/24)');
+  drawZoneBox(740, 190, 220, 160, 'rgba(16, 185, 129, 0.08)', '#10b981', 'VLAN 30 - Booth 2 (192.168.30.0/24)');
+  drawZoneBox(400, 420, 200, 130, 'rgba(245, 158, 11, 0.08)', '#f59e0b', 'VLAN 50 - Admin Station (192.168.50.0/24)');
+}
+
+function drawZoneBox(x, y, w, h, bg, border, title) {
   ctx.fillStyle = bg;
-  ctx.fillRect(x, y, w, h);
   ctx.strokeStyle = border;
   ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 4]);
+  ctx.fillRect(x, y, w, h);
   ctx.strokeRect(x, y, w, h);
+  ctx.setLineDash([]);
 
-  ctx.font = 'bold 11px sans-serif';
   ctx.fillStyle = border;
+  ctx.font = 'bold 10px sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText(label, x + 10, y + 20);
+  ctx.fillText(title, x + 8, y + 16);
 }
 
-function drawLinkLed(x1, y1, x2, y2) {
-  const midX = (x1 + x2) / 2;
-  const midY = (y1 + y2) / 2;
+function drawLinkLED(n1, n2, label, offsetRatio) {
+  const lx = n1.x + (n2.x - n1.x) * offsetRatio;
+  const ly = n1.y + (n2.y - n1.y) * offsetRatio;
 
-  ctx.beginPath();
-  ctx.arc(midX, midY, 3.5, 0, Math.PI * 2);
   ctx.fillStyle = '#10b981';
+  ctx.beginPath();
+  ctx.arc(lx, ly, 4, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = '#059669';
-  ctx.lineWidth = 1;
-  ctx.stroke();
-}
 
-function animatePacketRoute(nodePath, color = '#10b981', speed = 0.12, hopDelay = 80) {
-  for (let i = 0; i < nodePath.length - 1; i++) {
-    const fromId = nodePath[i];
-    const toId = nodePath[i + 1];
-
-    const fromNode = topoNodes.find(n => n.id === fromId || n.ip === fromId);
-    const toNode = topoNodes.find(n => n.id === toId || n.ip === toId);
-
-    if (fromNode && toNode) {
-      setTimeout(() => {
-        activePackets.push({
-          startX: fromNode.x,
-          startY: fromNode.y,
-          endX: toNode.x,
-          endY: toNode.y,
-          currentX: fromNode.x,
-          currentY: fromNode.y,
-          progress: 0,
-          speed: speed,
-          color: color
-        });
-      }, i * hopDelay);
-    }
+  if (label) {
+    ctx.fillStyle = '#9ca3af';
+    ctx.font = '9px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, lx, ly - 6);
   }
 }
 
-function updatePackets() {
-  for (let i = activePackets.length - 1; i >= 0; i--) {
-    const pkt = activePackets[i];
-    pkt.progress += pkt.speed;
-    pkt.currentX = pkt.startX + (pkt.endX - pkt.startX) * pkt.progress;
-    pkt.currentY = pkt.startY + (pkt.endY - pkt.startY) * pkt.progress;
+function drawCiscoDeviceNode(n) {
+  const { x, y, type, label, ip } = n;
 
-    if (pkt.progress >= 1) {
-      activePackets.splice(i, 1);
-    }
+  ctx.save();
+  ctx.translate(x, y);
+
+  if (type === 'ROUTER') {
+    ctx.fillStyle = '#0284c7';
+    ctx.beginPath(); ctx.arc(0, 0, 22, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(-10, 0); ctx.lineTo(10, 0);
+    ctx.moveTo(0, -10); ctx.lineTo(0, 10);
+    ctx.stroke();
+  } else if (type === 'CORE_SWITCH') {
+    ctx.fillStyle = '#7c3aed';
+    ctx.fillRect(-22, -18, 44, 36);
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
+    ctx.strokeRect(-22, -18, 44, 36);
+    ctx.beginPath();
+    ctx.moveTo(-12, -8); ctx.lineTo(12, 8);
+    ctx.moveTo(12, -8); ctx.lineTo(-12, 8);
+    ctx.stroke();
+  } else if (type === 'SWITCH') {
+    ctx.fillStyle = '#2563eb';
+    ctx.fillRect(-20, -14, 40, 28);
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5;
+    ctx.strokeRect(-20, -14, 40, 28);
+    ctx.beginPath();
+    ctx.moveTo(-10, -3); ctx.lineTo(10, -3);
+    ctx.moveTo(10, 3); ctx.lineTo(-10, 3);
+    ctx.stroke();
+  } else if (type === 'SERVER') {
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(-16, -20, 32, 40);
+    ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2;
+    ctx.strokeRect(-16, -20, 32, 40);
+    ctx.fillStyle = '#10b981';
+    ctx.fillRect(-10, -14, 6, 3);
+    ctx.fillRect(-2, -14, 6, 3);
+  } else if (type === 'PC') {
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(-16, -16, 32, 22);
+    ctx.strokeStyle = '#10b981'; ctx.lineWidth = 1.5;
+    ctx.strokeRect(-16, -16, 32, 22);
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(-13, -13, 26, 16);
+    ctx.fillStyle = '#475569';
+    ctx.fillRect(-6, 6, 12, 6);
+    ctx.fillRect(-12, 12, 24, 3);
   }
+
+  ctx.restore();
+
+  ctx.fillStyle = '#f3f4f6';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(label, x, y + 34);
+
+  ctx.fillStyle = '#9ca3af';
+  ctx.font = '9px monospace';
+  ctx.fillText(ip, x, y + 46);
 }
 
-function triggerDemoPacket() {
-  executeRouterPing(topoNodes.find(n => n.id === 'pc0'), topoNodes.find(n => n.id === 'web_server'));
-}
-
-function triggerPingTest() {
-  executeRouterPing(topoNodes.find(n => n.id === 'pc8'), topoNodes.find(n => n.id === 'router0'));
-}
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(initTopologyCanvas, 400);
+});
