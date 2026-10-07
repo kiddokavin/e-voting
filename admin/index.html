@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Election Control Station - E-Voting Security Control</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <nav class="navbar">
+    <div class="brand-container">
+      <div class="brand-icon">🔒</div>
+      <div class="brand-title">
+        <h1>CENTRAL ELECTION COMMISSION CONTROL STATION</h1>
+        <p>RESTRICTED SECURITY MANAGEMENT TERMINAL (PC8 - VLAN 50) | LEVEL 5 AUTHORIZATION</p>
+      </div>
+    </div>
+
+    <div class="status-badge">
+      <div class="pulse-dot"></div>
+      <span>PC8 RESTRICTED TERMINAL</span>
+    </div>
+  </nav>
+
+  <!-- Login Modal -->
+  <div class="modal-backdrop" id="authModal">
+    <div class="auth-modal">
+      <div style="text-align: center; margin-bottom: 1.2rem;">
+        <div style="font-size: 2.5rem;">🔒</div>
+        <h2 style="color: #fbbf24; font-size: 1.25rem; margin-top: 6px;">Election Officer Authentication</h2>
+        <p style="font-size: 0.78rem; color: var(--text-muted);">Please enter your Officer Credentials to access System Controls.</p>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <label for="adminUserInput">Officer Username</label>
+        <input type="text" id="adminUserInput" class="form-input" placeholder="admin" value="admin">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.2rem;">
+        <label for="adminPassInput">Authorization Key / Password</label>
+        <input type="password" id="adminPassInput" class="form-input" placeholder="admin123" value="admin123">
+      </div>
+
+      <div id="adminLoginError" style="display: none; color: #f87171; font-size: 0.8rem; margin-bottom: 1rem; text-align: center;"></div>
+
+      <button class="btn-admin btn-start" style="width: 100%; justify-content: center;" onclick="verifyAdminLogin()">
+        🔑 Authenticate Officer Terminal
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Container (Shown after authentication) -->
+  <div class="main-container" id="adminMainPanel" style="display: none;">
+
+    <!-- Card 1: Election State Controller -->
+    <div class="card">
+      <div class="card-title">
+        <span>🚥</span> Election State Controller
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem;">
+        Current Election Status: <strong id="currentElectionStatusDisplay" style="color: #34d399;">ACTIVE</strong>
+      </p>
+
+      <div class="btn-grid">
+        <button class="btn-admin btn-start" onclick="triggerAdminAction('START')">
+          <span style="font-size: 1.5rem;">▶️</span>
+          <span>START ELECTION</span>
+        </button>
+        <button class="btn-admin btn-pause" onclick="triggerAdminAction('PAUSE')">
+          <span style="font-size: 1.5rem;">⏸️</span>
+          <span>PAUSE ELECTION</span>
+        </button>
+        <button class="btn-admin btn-end" onclick="triggerAdminAction('END')">
+          <span style="font-size: 1.5rem;">⏹️</span>
+          <span>END ELECTION</span>
+        </button>
+        <button class="btn-admin btn-reset" onclick="triggerAdminAction('RESET')">
+          <span style="font-size: 1.5rem;">🔄</span>
+          <span>RESET DATABASE</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Card 2: Cyber Attack & IDS Threat Simulator -->
+    <div class="card">
+      <div class="card-title">
+        <span>🛡️</span> Cyber Attack & Intrusion Detection (IDS) Threat Simulator
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem;">
+        Test the Central Audit Monitoring System (Server3 - 192.168.10.13) response to simulated cyber threats.
+      </p>
+
+      <div class="btn-grid">
+        <button class="btn-admin btn-attack" style="grid-column: span 2;" onclick="triggerAdminAction('SIMULATE_ATTACK')">
+          <span style="font-size: 1.5rem;">🚨</span>
+          <span>SIMULATE SYN FLOOD ATTACK ON WEB SERVER (192.168.10.10)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Card 3: Register New Eligible Voter -->
+    <div class="card">
+      <div class="card-title">
+        <span>👤</span> Register New Eligible Voter
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 180px; gap: 1rem; align-items: flex-end;">
+        <div class="form-group">
+          <label for="newVoterName">Voter Full Name</label>
+          <input type="text" id="newVoterName" class="form-input" placeholder="e.g. Ramesh Babu">
+        </div>
+        <div class="form-group">
+          <label for="newVoterBooth">Assign Polling Station Subnet</label>
+          <select id="newVoterBooth" class="form-select">
+            <option value="Zone 1 (Red)">Zone 1 (Red - Subnet 192.168.20.0/24)</option>
+            <option value="Zone 2 (Green)">Zone 2 (Green - Subnet 192.168.30.0/24)</option>
+            <option value="Zone 3 (Pink)">Zone 3 (Pink - Subnet 192.168.40.0/24)</option>
+          </select>
+        </div>
+        <button class="btn-admin btn-start" style="padding: 0.75rem;" onclick="registerNewVoter()">
+          ➕ Register Voter
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

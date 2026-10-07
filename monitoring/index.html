@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Central Monitoring Dashboard - E-Voting System</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <nav class="navbar">
+    <div class="brand-container">
+      <div class="brand-icon">📊</div>
+      <div class="brand-title">
+        <h1>CENTRAL ELECTION COMMISSION MONITORING STATION</h1>
+        <p>REAL-TIME VOTE TALLY, PACKET TRACER TOPOLOGY & AUDIT STREAM | IP: 192.168.10.13</p>
+      </div>
+    </div>
+
+    <div class="status-badge">
+      <div class="pulse-dot"></div>
+      <span id="monitoringStatusText">SERVER ONLINE (VLAN 10)</span>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <div class="main-container">
+
+    <!-- Top Key Metrics -->
+    <div class="stats-grid">
+      <div class="stat-card" style="--stat-color: #3b82f6;">
+        <div class="stat-icon">🗳️</div>
+        <div class="stat-details">
+          <h3 id="totalVotesCount">0</h3>
+          <p>Total Votes Cast</p>
+        </div>
+      </div>
+      <div class="stat-card" style="--stat-color: #10b981;">
+        <div class="stat-icon">📊</div>
+        <div class="stat-details">
+          <h3 id="voterTurnoutText">0.0%</h3>
+          <p>Voter Turnout %</p>
+        </div>
+      </div>
+      <div class="stat-card" style="--stat-color: #f59e0b;">
+        <div class="stat-icon">🏆</div>
+        <div class="stat-details">
+          <h3 id="leadingCandidateText">-</h3>
+          <p>Leading Candidate</p>
+        </div>
+      </div>
+      <div class="stat-card" style="--stat-color: #ef4444;">
+        <div class="stat-icon">🛡️</div>
+        <div class="stat-details">
+          <h3 id="securityIncidentCount">0</h3>
+          <p>Security Threats Blocked</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="dashboard-grid">
+      <!-- Left: Real-Time Candidate Share Bar Chart -->
+      <div class="card">
+        <div class="card-title">
+          <span>📈</span> Live Candidate Vote Share
+        </div>
+        <div class="chart-container">
+          <canvas id="voteShareChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Right: Zone Turnout Doughnut Chart -->
+      <div class="card">
+        <div class="card-title">
+          <span>🎨</span> Zone-Wise Turnout Breakdown
+        </div>
+        <div class="chart-container">
+          <canvas id="zoneTurnoutChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Packet Tracer Network Topology Visualizer -->
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <div class="card-title">
+        <span>🌐</span> Cisco Packet Tracer Live Network Topology Visualizer
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Simulated network packet flow from Polling Booth Subnets (`VLAN 20, 30, 40`) -> Core Switch (`3560-24PS`) -> Server Farm (`VLAN 10`).
+      </p>
+
+      <div class="canvas-wrapper">
+        <canvas id="topologyCanvas"></canvas>
+      </div>
+    </div>
+
+    <!-- Bottom Section: Server Farm Node Status & Live Audit Stream -->
+    <div class="dashboard-grid">
+      <!-- Node Status Inspector -->
+      <div class="card">
+        <div class="card-title">
+          <span>🖥️</span> Server Farm & Network Node Status
+        </div>
+        <div class="node-grid" id="nodeStatusGrid">
+          <!-- Dynamically filled by dashboard.js -->
+        </div>
+      </div>
+
+      <!-- Live Central Audit Log Stream -->
+      <div class="card">
+        <div class="card-title">
+          <span>📜</span> Live Central Audit Stream (Server3)
+        </div>
+        <div class="audit-stream" id="auditLogStream">
+          <!-- Dynamically filled by dashboard.js -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/topology.js"></script>
+</body>
+</html>

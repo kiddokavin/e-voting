@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voter Terminal - Secure Electronic Voting System</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <nav class="navbar">
+    <div class="brand-container">
+      <div class="brand-icon">🗳️</div>
+      <div class="brand-title">
+        <h1>ELECTRONIC VOTING SYSTEM - VOTER TERMINAL</h1>
+        <p>POLLING BOOTH SUBNET STATION | CONNECTED TO CENTRAL SERVER (192.168.10.10)</p>
+      </div>
+    </div>
+
+    <div class="status-badge">
+      <div class="pulse-dot"></div>
+      <span>CONNECTED TO CENTRAL SERVER</span>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <div class="main-container">
+
+    <!-- Top Stats -->
+    <div class="stats-grid">
+      <div class="stat-card" style="--stat-color: #3b82f6;">
+        <div class="stat-icon">💻</div>
+        <div class="stat-details">
+          <h3 id="currentTerminalText">Booth 1 - Red Zone</h3>
+          <p id="terminalIpText">Terminal IP: 192.168.20.10</p>
+        </div>
+      </div>
+      <div class="stat-card" style="--stat-color: #10b981;">
+        <div class="stat-icon">🔒</div>
+        <div class="stat-details">
+          <h3>SHA-256 Protocol</h3>
+          <p>End-to-End Encrypted Vote Hash</p>
+        </div>
+      </div>
+      <div class="stat-card" style="--stat-color: #8b5cf6;">
+        <div class="stat-icon">🛡️</div>
+        <div class="stat-details">
+          <h3>Single-Vote Lock</h3>
+          <p>Double Voting Prevention Active</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="voting-grid">
+      <!-- Left: Voter Verification Panel -->
+      <div class="card">
+        <div class="card-title">
+          <span>🔐</span> Voter Authentication
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="boothSelect">Select Polling Booth Station</label>
+          <select id="boothSelect" class="form-select" onchange="updateTerminalInfo()">
+            <option value="Zone 1 (Red)|192.168.20.10">Booth 1 - Red Zone (Subnet 192.168.20.0/24)</option>
+            <option value="Zone 2 (Green)|192.168.30.10">Booth 2 - Green Zone (Subnet 192.168.30.0/24)</option>
+            <option value="Zone 3 (Pink)|192.168.40.10">Booth 3 - Pink Zone (Subnet 192.168.40.0/24)</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="voterIdInput">Enter Voter ID Number</label>
+          <input type="text" id="voterIdInput" class="form-input" placeholder="e.g. VOTE1001" value="VOTE1001">
+        </div>
+
+        <button class="btn-primary" onclick="verifyVoter()">
+          <span>🔍</span> Verify Voter Eligibility
+        </button>
+
+        <div style="margin-top: 1.2rem; border-top: 1px solid var(--border-color); padding-top: 0.8rem;">
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">Sample Eligible Voters (Click to Test):</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <button class="demo-btn" onclick="selectQuickVoter('VOTE1001')">VOTE1001 (Kavin)</button>
+            <button class="demo-btn" onclick="selectQuickVoter('VOTE1002')">VOTE1002 (Priya)</button>
+            <button class="demo-btn" onclick="selectQuickVoter('VOTE1003')">VOTE1003 (Anand)</button>
+            <button class="demo-btn" onclick="selectQuickVoter('VOTE1004')">VOTE1004 (Deepa)</button>
+          </div>
+        </div>
+
+        <div id="voterVerificationResult"></div>
+      </div>
+
+      <!-- Right: Official Electronic Ballot Box Panel -->
+      <div class="card" id="ballotBoxPanel">
+        <div class="card-title">
+          <span>📜</span> Official Electronic Ballot Box
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem;">
+          Please select your preferred candidate and click <strong>CAST VOTE</strong>. Your vote will be cryptographically signed by CA Server4 and committed to Database Server0.
+        </p>
+
+        <div id="candidateListContainer">
+          <!-- Dynamically filled by voting.js -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Receipt Modal -->
+  <div class="modal-backdrop" id="receiptModal">
+    <div class="receipt-modal">
+      <div style="text-align: center; margin-bottom: 1rem;">
+        <div style="font-size: 2.5rem;">🗳️</div>
+        <h2 style="color: #34d399; font-size: 1.3rem; margin-top: 6px;">Vote Cast & Signed!</h2>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">Committed to Immutable Central Database Server0</p>
+      </div>
+
+      <div id="receiptDetails"></div>
+
+      <button class="btn-primary" style="margin-top: 1.5rem;" onclick="closeReceiptModal()">
+        ✅ Close Receipt
+      </button>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/voting.js"></script>
+</body>
+</html>
