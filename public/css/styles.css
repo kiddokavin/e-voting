@@ -575,3 +575,55 @@ body {
   margin-top: 0.5rem;
   font-size: 0.75rem;
 }
+
+/* Cisco Packet Tracer Interactive Hotspots & Pulse Animations */
+.cisco-hotspot {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid rgba(96, 165, 250, 0.7);
+  background: rgba(15, 23, 42, 0.5);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.cisco-hotspot:hover {
+  transform: translate(-50%, -50%) scale(1.35);
+  border-color: #60a5fa;
+  background: rgba(59, 130, 246, 0.8);
+  box-shadow: 0 0 20px #3b82f6;
+  z-index: 100;
+}
+
+.cisco-hotspot.selected-src {
+  border-color: #60a5fa;
+  background: rgba(59, 130, 246, 0.9);
+  box-shadow: 0 0 25px #60a5fa;
+  animation: pulse-blue 1.2s infinite;
+}
+
+.cisco-hotspot.selected-tgt {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.9);
+  box-shadow: 0 0 25px #10b981;
+  animation: pulse-green 1.2s infinite;
+}
+
+@keyframes pulse-blue {
+  0% { box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.8); }
+  70% { box-shadow: 0 0 0 14px rgba(96, 165, 250, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(96, 165, 250, 0); }
+}
+
+@keyframes pulse-green {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8); }
+  70% { box-shadow: 0 0 0 14px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}

@@ -263,9 +263,13 @@
           </div>
         </div>
 
-        <!-- Official Cisco Packet Tracer Interface Screen -->
-        <div style="border: 2px solid #3b82f6; border-radius: 12px; overflow: hidden; background: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.6); position: relative;">
-          <img src="img/cisco_topology.png" alt="Cisco Packet Tracer Network Topology Diagram" style="width: 100%; display: block; border-bottom: 2px solid #3b82f6;">
+        <!-- Official Cisco Packet Tracer Interface Screen with Interactive Clickable Hotspots -->
+        <div id="ciscoMapContainer" style="border: 2px solid #3b82f6; border-radius: 12px; overflow: hidden; background: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.6); position: relative;">
+          <img id="ciscoImg" src="img/cisco_topology.png" alt="Cisco Packet Tracer Network Topology Diagram" style="width: 100%; display: block; border-bottom: 2px solid #3b82f6;">
+          <canvas id="ciscoOverlayCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;"></canvas>
+          <div id="ciscoHotspotsContainer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;">
+            <!-- Populated dynamically with interactive glowing device hotspots -->
+          </div>
         </div>
 
         <!-- Live Device Inspector & Cisco Command Prompt Output -->

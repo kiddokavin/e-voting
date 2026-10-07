@@ -85,37 +85,99 @@ function resizeCanvas() {
   drawTopology();
 }
 
-function initTopologyCanvas() {
-  canvas = document.getElementById('topologyCanvas');
-  if (!canvas) return;
-  ctx = canvas.getContext('2d');
+const ciscoDevices = [
+  { id: 'router0', name: 'Router0', ip: '192.168.1.1', type: 'ROUTER', left: '49.8%', top: '15.5%', model: 'Cisco 2911 ISR Router' },
+  { id: 'mswitch0', name: 'Multilayer Switch0', ip: '192.168.1.2', type: 'CORE_SWITCH', left: '49.8%', top: '24.5%', model: 'Cisco Catalyst 3560-24PS' },
+  { id: 'switch0', name: 'Switch0', ip: '192.168.10.1', type: 'SWITCH', left: '27.4%', top: '35.5%', model: 'Cisco Catalyst 2960-24TT' },
+  { id: 'db_server', name: 'Server0', ip: '192.168.10.12', type: 'SERVER', left: '21.5%', top: '53%', model: 'Cisco Server-PT' },
+  { id: 'web_server', name: 'Server1', ip: '192.168.10.10', type: 'SERVER', left: '33.2%', top: '53%', model: 'Cisco Server-PT' },
+  { id: 'dns_server', name: 'Server2', ip: '192.168.10.11', type: 'SERVER', left: '21.5%', top: '68%', model: 'Cisco Server-PT' },
+  { id: 'audit_server', name: 'Server3', ip: '192.168.10.13', type: 'SERVER', left: '33.2%', top: '68%', model: 'Cisco Server-PT' },
+  { id: 'sec_server', name: 'Server4', ip: '192.168.10.14', type: 'SERVER', left: '27.4%', top: '78%', model: 'Cisco Server-PT' },
+  { id: 'switch1', name: 'Switch1', ip: '192.168.20.1', type: 'SWITCH', left: '45.1%', top: '37%', model: 'Cisco Catalyst 2960-24TT' },
+  { id: 'pc0', name: 'PC0', ip: '192.168.20.10', type: 'PC', left: '42.2%', top: '64%', model: 'Generic PC-PT' },
+  { id: 'pc1', name: 'PC1', ip: '192.168.20.11', type: 'PC', left: '48.1%', top: '64%', model: 'Generic PC-PT' },
+  { id: 'switch2', name: 'Switch2', ip: '192.168.30.1', type: 'SWITCH', left: '57.1%', top: '37%', model: 'Cisco Catalyst 2960-24TT' },
+  { id: 'pc2', name: 'PC2', ip: '192.168.30.10', type: 'PC', left: '54.6%', top: '64%', model: 'Generic PC-PT' },
+  { id: 'pc3', name: 'PC3', ip: '192.168.30.11', type: 'PC', left: '59.6%', top: '64%', model: 'Generic PC-PT' },
+  { id: 'switch3', name: 'Switch3', ip: '192.168.40.1', type: 'SWITCH', left: '69.1%', top: '37%', model: 'Cisco Catalyst 2960-24TT' },
+  { id: 'pc4', name: 'PC4', ip: '192.168.40.10', type: 'PC', left: '66.6%', top: '64%', model: 'Generic PC-PT' },
+  { id: 'pc5', name: 'PC5', ip: '192.168.40.11', type: 'PC', left: '71.6%', top: '64%', model: 'Generic PC-PT' },
+  { id: 'switch4', name: 'Switch4', ip: '192.168.50.1', type: 'SWITCH', left: '81.1%', top: '37%', model: 'Cisco Catalyst 2960-24TT' },
+  { id: 'pc6', name: 'PC6', ip: '192.168.50.10', type: 'PC', left: '76.8%', top: '64%', model: 'Generic PC-PT' },
+  { id: 'pc7', name: 'PC7', ip: '192.168.50.11', type: 'PC', left: '81.1%', top: '75%', model: 'Generic PC-PT' },
+  { id: 'pc8', name: 'PC8', ip: '192.168.50.12', type: 'PC', left: '85.4%', top: '64%', model: 'Generic PC-PT' }
+];
 
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
+let hotspotSource = null;
+let hotspotTarget = null;
 
-  // Canvas Click Handler: Instant 2-Node Selection
-  canvas.addEventListener('click', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
-    const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
+function initCiscoHotspots() {
+  const container = document.getElementById('ciscoHotspotsContainer');
+  if (!container) return;
+  container.innerHTML = '';
 
-    const clicked = topoNodes.find(n => {
-      const dist = Math.hypot(n.x - clickX, n.y - clickY);
-      return dist < 24;
+  ciscoDevices.forEach(dev => {
+    const btn = document.createElement('div');
+    btn.className = 'cisco-hotspot';
+    btn.style.left = dev.left;
+    btn.style.top = dev.top;
+    btn.title = `${dev.name} (${dev.ip})\nModel: ${dev.model}\nClick to Select for Cisco Ping!`;
+    btn.dataset.id = dev.id;
+
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      handleHotspotClick(dev);
+    };
+
+    container.appendChild(btn);
+  });
+}
+
+function handleHotspotClick(dev) {
+  if (!hotspotSource || (hotspotSource && hotspotTarget)) {
+    hotspotSource = dev;
+    hotspotTarget = null;
+
+    document.querySelectorAll('.cisco-hotspot').forEach(el => {
+      el.classList.remove('selected-src', 'selected-tgt');
+      if (el.dataset.id === dev.id) el.classList.add('selected-src');
     });
 
-    if (clicked) {
-      handleNodeClick(clicked);
-      drawTopology();
-    }
-  });
+    const badge = document.getElementById('topoSelectedNodeBadge');
+    if (badge) badge.textContent = `📍 Source: ${dev.name}`;
 
-  function animLoop() {
-    updatePackets();
-    drawTopology();
-    requestAnimationFrame(animLoop);
+    updateDetailBox(`
+      <div style="color: #60a5fa; font-weight: bold;">
+        📍 SOURCE SELECTED ON DIAGRAM: ${dev.name} (${dev.ip})
+      </div>
+      <div style="color: #f59e0b; margin-top: 4px;">
+        👉 Now click any 2nd Target Device on the Cisco diagram to simulate ICMP Ping...
+      </div>
+    `);
+
+    showAlert(`📍 Source '${dev.name}' selected on Cisco diagram! Now click target device...`, 'info');
+  } else if (hotspotSource && !hotspotTarget) {
+    if (hotspotSource.id === dev.id) {
+      showAlert('Please select a DIFFERENT target device on the diagram!', 'warning');
+      return;
+    }
+
+    hotspotTarget = dev;
+
+    document.querySelectorAll('.cisco-hotspot').forEach(el => {
+      if (el.dataset.id === dev.id) el.classList.add('selected-tgt');
+    });
+
+    const badge = document.getElementById('topoSelectedNodeBadge');
+    if (badge) badge.textContent = `Ping: ${hotspotSource.name} ➔ ${hotspotTarget.name}`;
+
+    executeRouterPing(hotspotSource.name, hotspotTarget.name, false);
   }
-  requestAnimationFrame(animLoop);
+}
+
+function initTopologyCanvas() {
+  initCiscoHotspots();
 }
 
 function handleNodeClick(node) {
