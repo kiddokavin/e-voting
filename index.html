@@ -289,11 +289,48 @@
         <!-- Live Step-by-Step Packet Trace Stream Console -->
         <div style="margin-top: 1rem; background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <h4 style="color: #60a5fa; font-size: 0.9rem;">💡 Device Inspector & Real-Time Hop Tracer (Click any node above to inspect)</h4>
+            <h4 style="color: #60a5fa; font-size: 0.9rem;">💡 Device Inspector & Cisco Command Prompt Output</h4>
             <span class="badge badge-info" id="topoSelectedNodeBadge">Selected: None</span>
           </div>
           <div id="nodeDetailBox" style="font-family: monospace; font-size: 0.85rem; color: #d1d5db; line-height: 1.5;">
             Click on any router, switch, or server above to open the Cisco Device Configuration Inspector...
+          </div>
+        </div>
+
+        <!-- Cisco Packet Tracer Real-Time PDU Simulation Event List -->
+        <div style="margin-top: 1rem; background: rgba(15, 23, 42, 0.9); padding: 1rem; border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.3);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem;">
+            <h4 style="color: #60a5fa; font-size: 0.9rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+              <span>⚡</span> Cisco Packet Tracer Event List (PDU Ping Simulation Results)
+            </h4>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn-primary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; width: auto;" onclick="triggerTestPingSuccess()">
+                ✅ Test Successful Ping
+              </button>
+              <button class="btn-danger" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; width: auto;" onclick="triggerTestPingFail()">
+                ❌ Test Failed Ping
+              </button>
+            </div>
+          </div>
+          <div class="table-responsive" style="max-height: 220px;">
+            <table class="data-table" style="font-size: 0.8rem;">
+              <thead>
+                <tr>
+                  <th>PDU Event</th>
+                  <th>Source Device</th>
+                  <th>Destination Target</th>
+                  <th>Gateway Router</th>
+                  <th>Protocol</th>
+                  <th>RTT Latency</th>
+                  <th>Cisco Simulation Status</th>
+                </tr>
+              </thead>
+              <tbody id="ciscoSimulationTable">
+                <tr>
+                  <td colspan="7" style="text-align: center; color: var(--text-muted);">No PDU pings executed yet. Click 2 nodes above or use controls to ping!</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
