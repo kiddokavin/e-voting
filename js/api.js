@@ -1,6 +1,6 @@
 // Universal API Adapter: Supports both Node.js Express backend and Static GitHub Pages (localStorage fallback)
 const API = {
-  isStatic: false,
+  isStatic: (typeof window !== 'undefined' && (window.location.hostname.includes('github.io') || window.location.hostname.includes('github.com') || window.location.protocol === 'file:')),
 
   mockDB: {
     electionStatus: 'ACTIVE',
@@ -85,12 +85,21 @@ const API = {
   },
 
   async init() {
+    if (this.isStatic) {
+      this.loadLocalStorage();
+      console.log('[API] Running on Static GitHub Pages mode with LocalStorage DB engine.');
+      return;
+    }
+
     try {
-      const res = await fetch('/api/candidates');
+      const res = await fetch('api/candidates');
       if (res.ok) {
-        this.isStatic = false;
-        console.log('[API] Connected to Node.js Express Backend.');
-        return;
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          this.isStatic = false;
+          console.log('[API] Connected to Node.js Express Backend.');
+          return;
+        }
       }
     } catch (e) {
       console.log('[API] Running on Static GitHub Pages mode with LocalStorage DB engine.');
@@ -120,8 +129,12 @@ const API = {
 
   async getCandidates() {
     if (!this.isStatic) {
-      const res = await fetch('/api/candidates');
-      return await res.json();
+      try {
+        const res = await fetch('api/candidates');
+        if (res.ok) return await res.json();
+      } catch (err) {
+        this.isStatic = true;
+      }
     }
     return {
       status: this.mockDB.electionStatus,
@@ -132,12 +145,16 @@ const API = {
 
   async verifyVoter(voterId) {
     if (!this.isStatic) {
-      const res = await fetch('/api/voter/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ voterId })
-      });
-      return await res.json();
+      try {
+        const res = await fetch('api/voter/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ voterId })
+        });
+        if (res.ok) return await res.json();
+      } catch (err) {
+        this.isStatic = true;
+      }
     }
 
     const cleanId = (voterId || '').trim().toUpperCase();
@@ -174,12 +191,16 @@ const API = {
 
   async castVote(payload) {
     if (!this.isStatic) {
-      const res = await fetch('/api/vote/cast', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      return await res.json();
+      try {
+        const res = await fetch('api/vote/cast', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) return await res.json();
+      } catch (err) {
+        this.isStatic = true;
+      }
     }
 
     const { voterId, candidateId, boothZone, terminalIp } = payload;
@@ -230,8 +251,12 @@ const API = {
 
   async getMonitoringStats() {
     if (!this.isStatic) {
-      const res = await fetch('/api/monitoring/stats');
-      return await res.json();
+      try {
+        const res = await fetch('api/monitoring/stats');
+        if (res.ok) return await res.json();
+      } catch (err) {
+        this.isStatic = true;
+      }
     }
 
     const totalVoters = this.mockDB.voters.length;
@@ -265,12 +290,16 @@ const API = {
 
   async adminAction(action, data = {}) {
     if (!this.isStatic) {
-      const res = await fetch('/api/admin/control', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, ...data })
-      });
-      return await res.json();
+      try {
+        const res = await fetch('api/admin/control', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, ...data })
+        });
+        if (res.ok) return await res.json();
+      } catch (err) {
+        this.isStatic = true;
+      }
     }
 
     if (action === 'START') this.mockDB.electionStatus = 'ACTIVE';
