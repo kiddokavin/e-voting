@@ -65,7 +65,10 @@ function switchTab(tabId) {
   if (tabId === 'monitoring') {
     fetchMonitoringStats();
   } else if (tabId === 'topology') {
-    drawTopology();
+    setTimeout(() => {
+      if (typeof resizeCanvas === 'function') resizeCanvas();
+      if (typeof drawTopology === 'function') drawTopology();
+    }, 50);
   }
 }
 
@@ -73,7 +76,6 @@ function switchTab(tabId) {
 function showAdminLoginModal() {
   const modal = document.getElementById('adminLoginModal');
   if (modal) {
-    // Clear previous password input every time modal is opened
     const passEl = document.getElementById('adminPassword');
     if (passEl) passEl.value = '';
     modal.classList.add('show');
@@ -93,7 +95,6 @@ function handleAdminLogin(event) {
   const username = (userEl ? userEl.value : '').trim();
   const password = (passEl ? passEl.value : '').trim();
 
-  // Accept valid admin credentials (e.g. admin / admin123 or officer / ec2026)
   if ((username.toLowerCase() === 'admin' || username.toLowerCase() === 'officer' || username.toLowerCase() === 'ec_admin') &&
       (password === 'admin123' || password === 'ec2026' || password === '123456' || password === 'admin')) {
 
@@ -106,7 +107,6 @@ function handleAdminLogin(event) {
     closeAdminLoginModal();
     showAlert(`🔑 Access Granted! Officer '${username}' authenticated for this session.`, 'success');
 
-    // Switch to admin tab
     switchTab('admin');
   } else {
     showAlert('❌ Invalid Officer Credentials! Access Denied.', 'error');

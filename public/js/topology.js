@@ -75,16 +75,20 @@ const topoLinks = [
   { from: 'switch4', to: 'pc8' }
 ];
 
+function resizeCanvas() {
+  if (!canvas) return;
+  const parent = canvas.parentElement;
+  const w = (parent && parent.clientWidth) ? parent.clientWidth : 1200;
+  const h = (parent && parent.clientHeight) ? parent.clientHeight : 580;
+  canvas.width = w > 200 ? w : 1200;
+  canvas.height = h > 200 ? h : 580;
+  drawTopology();
+}
+
 function initTopologyCanvas() {
   canvas = document.getElementById('topologyCanvas');
   if (!canvas) return;
   ctx = canvas.getContext('2d');
-
-  function resizeCanvas() {
-    canvas.width = canvas.parentElement.clientWidth;
-    canvas.height = canvas.parentElement.clientHeight;
-    drawTopology();
-  }
 
   window.addEventListener('resize', resizeCanvas);
   resizeCanvas();
