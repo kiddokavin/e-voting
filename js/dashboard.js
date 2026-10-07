@@ -153,14 +153,14 @@ async function adminAction(action) {
 
 async function testDoubleVoteSimulation() {
   try {
-    const data = await API.verifyVoter('VOTE1001');
+    const data = await API.verifyVoter('VOT1000001');
     if (!data.success) {
       showAlert(`🔒 CENTRAL IDS PROTECTION: ${data.message}`, 'error');
       // Trigger Red Intrusion Packet animation
       animatePacketRoute(['pc0', 'switch1', 'mswitch0', 'switch0', 'audit_server'], '#ef4444');
       fetchMonitoringStats();
     } else {
-      showAlert('Voter hasn\'t voted yet. Please cast a vote for VOTE1001 first, then click this button again to test double-voting block!', 'info');
+      showAlert('Voter hasn\'t voted yet. Please cast a vote for VOT1000001 first, then click this button again to test double-voting block!', 'info');
     }
   } catch (err) {
     console.error(err);

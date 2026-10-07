@@ -57,14 +57,21 @@ function updateTerminalInfo() {
 }
 
 async function verifyVoter() {
-  const voterId = document.getElementById('voterIdInput').value.trim();
-  if (!voterId) {
+  const rawInput = document.getElementById('voterIdInput') ? document.getElementById('voterIdInput').value : '';
+  const cleanId = rawInput.trim().toUpperCase();
+  if (!cleanId) {
     showAlert('Please enter a valid Voter ID number!', 'error');
     return;
   }
 
+  const voterRegex = /^[A-Z]{3}\d{7}$/;
+  if (!voterRegex.test(cleanId)) {
+    showAlert('Invalid Voter ID format! Must be 3 Letters + 7 Digits (e.g. VOT1000001)', 'error');
+    return;
+  }
+
   try {
-    const data = await API.verifyVoter(voterId);
+    const data = await API.verifyVoter(cleanId);
 
     if (!data.success) {
       showAlert(data.message, 'error');

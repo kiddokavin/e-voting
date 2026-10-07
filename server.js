@@ -69,16 +69,16 @@ let db = {
     }
   ],
   voters: [
-    { id: 'VOTE1001', name: 'Kavin Kumar', booth: 'Zone 1 (Red)', status: 'REGISTERED', voted: false },
-    { id: 'VOTE1002', name: 'Priya Dharshini', booth: 'Zone 1 (Red)', status: 'REGISTERED', voted: false },
-    { id: 'VOTE1003', name: 'Anand Viswanathan', booth: 'Zone 2 (Green)', status: 'REGISTERED', voted: false },
-    { id: 'VOTE1004', name: 'Deepa Sundaram', booth: 'Zone 2 (Green)', status: 'REGISTERED', voted: false },
-    { id: 'VOTE1005', name: 'Vikram Chandran', booth: 'Zone 3 (Pink)', status: 'REGISTERED', voted: false },
-    { id: 'VOTE1006', name: 'Sanjay Raghavan', booth: 'Zone 3 (Pink)', status: 'REGISTERED', voted: false },
-    { id: 'VOTE1007', name: 'Lakshmi Narayanan', booth: 'Zone 1 (Red)', status: 'REGISTERED', voted: false },
-    { id: 'VOTE1008', name: 'Karthik Subramanian', booth: 'Zone 2 (Green)', status: 'REGISTERED', voted: false },
-    { id: 'VOTE1009', name: 'Divya Bharathi', booth: 'Zone 3 (Pink)', status: 'REGISTERED', voted: false },
-    { id: 'VOTE1010', name: 'Manojit Banerjee', booth: 'Zone 1 (Red)', status: 'REGISTERED', voted: false }
+    { id: 'VOT1000001', name: 'Kavin Kumar', booth: 'Zone 1 (Red)', status: 'REGISTERED', voted: false },
+    { id: 'VOT1000002', name: 'Priya Dharshini', booth: 'Zone 1 (Red)', status: 'REGISTERED', voted: false },
+    { id: 'VOT1000003', name: 'Anand Viswanathan', booth: 'Zone 2 (Green)', status: 'REGISTERED', voted: false },
+    { id: 'VOT1000004', name: 'Deepa Sundaram', booth: 'Zone 2 (Green)', status: 'REGISTERED', voted: false },
+    { id: 'VOT1000005', name: 'Vikram Chandran', booth: 'Zone 3 (Pink)', status: 'REGISTERED', voted: false },
+    { id: 'VOT1000006', name: 'Sanjay Raghavan', booth: 'Zone 3 (Pink)', status: 'REGISTERED', voted: false },
+    { id: 'VOT1000007', name: 'Lakshmi Narayanan', booth: 'Zone 1 (Red)', status: 'REGISTERED', voted: false },
+    { id: 'VOT1000008', name: 'Karthik Subramanian', booth: 'Zone 2 (Green)', status: 'REGISTERED', voted: false },
+    { id: 'VOT1000009', name: 'Divya Bharathi', booth: 'Zone 3 (Pink)', status: 'REGISTERED', voted: false },
+    { id: 'VOT1000010', name: 'Manojit Banerjee', booth: 'Zone 1 (Red)', status: 'REGISTERED', voted: false }
   ],
   nodes: [
     { id: 'router0', name: 'Router0 (Central Gateway)', ip: '192.168.1.1', type: 'ROUTER', zone: 'Core', status: 'ONLINE', latency: 2, packets: 1420 },
