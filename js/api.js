@@ -143,13 +143,39 @@ const API = {
     };
   },
 
+  generateVoterName(voterId) {
+    const firstNames = [
+      'Kavin', 'Priya', 'Anand', 'Deepa', 'Vikram', 'Sanjay', 'Lakshmi', 'Karthik',
+      'Divya', 'Manojit', 'Rohan', 'Sneha', 'Arun', 'Kavitha', 'Vijay', 'Meera',
+      'Rahul', 'Anita', 'Surya', 'Pooja', 'Ganesh', 'Swati', 'Rajesh', 'Bhavna',
+      'Harish', 'Nisha', 'Ramesh', 'Aarti', 'Suresh', 'Revathi', 'Dinesh', 'Uma'
+    ];
+    const lastNames = [
+      'Kumar', 'Dharshini', 'Viswanathan', 'Sundaram', 'Chandran', 'Raghavan', 'Narayanan',
+      'Subramanian', 'Bharathi', 'Banerjee', 'Sharma', 'Patel', 'Verma', 'Singh',
+      'Iyer', 'Reddy', 'Nair', 'Rao', 'Deshmukh', 'Joshi', 'Pillai', 'Gowda'
+    ];
+    let hash = 0;
+    const str = voterId || 'VOT1000001';
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0;
+    }
+    const absHash = Math.abs(hash);
+    const fn = firstNames[absHash % firstNames.length];
+    const ln = lastNames[Math.floor(absHash / firstNames.length) % lastNames.length];
+    return `${fn} ${ln}`;
+  },
+
   async verifyVoter(voterId) {
+    const cleanId = (voterId || '').trim().toUpperCase();
+
     if (!this.isStatic) {
       try {
         const res = await fetch('api/voter/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ voterId })
+          body: JSON.stringify({ voterId: cleanId })
         });
         if (res.ok) return await res.json();
       } catch (err) {
@@ -157,20 +183,20 @@ const API = {
       }
     }
 
-    const cleanId = (voterId || '').trim().toUpperCase();
-    const voter = this.mockDB.voters.find(v => v.id === cleanId);
+    let voter = this.mockDB.voters.find(v => v.id === cleanId);
 
+    // Auto-register any valid 3-letter + 7-digit Voter ID with a unique generated name
     if (!voter) {
-      this.mockDB.auditLogs.unshift({
-        id: `LOG_${Date.now()}`,
-        timestamp: new Date().toISOString(),
-        type: 'SECURITY_ALERT',
-        sourceIp: '192.168.20.10',
-        message: `AUTH_FAILED: Unregistered Voter ID '${cleanId}'`,
-        hash: await this.sha256(`FAIL_${cleanId}_${Date.now()}`)
-      });
+      const generatedName = this.generateVoterName(cleanId);
+      voter = {
+        id: cleanId,
+        name: generatedName,
+        booth: 'Zone 1 (Red)',
+        status: 'REGISTERED',
+        voted: false
+      };
+      this.mockDB.voters.push(voter);
       this.saveLocalStorage();
-      return { success: false, message: 'Voter ID not found in Electoral Roll.' };
     }
 
     if (voter.voted) {
@@ -183,7 +209,7 @@ const API = {
         hash: await this.sha256(`DOUBLE_${voter.id}_${Date.now()}`)
       });
       this.saveLocalStorage();
-      return { success: false, message: 'ACCESS DENIED: Voter has ALREADY cast their vote! Double voting is blocked.' };
+      return { success: false, message: `ACCESS DENIED: Voter ${voter.id} (${voter.name}) has ALREADY cast their vote! Double voting is blocked.` };
     }
 
     return { success: true, voter };

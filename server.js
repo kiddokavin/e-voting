@@ -171,6 +171,30 @@ app.get('/api/candidates', (req, res) => {
   });
 });
 
+function generateVoterName(voterId) {
+  const firstNames = [
+    'Kavin', 'Priya', 'Anand', 'Deepa', 'Vikram', 'Sanjay', 'Lakshmi', 'Karthik',
+    'Divya', 'Manojit', 'Rohan', 'Sneha', 'Arun', 'Kavitha', 'Vijay', 'Meera',
+    'Rahul', 'Anita', 'Surya', 'Pooja', 'Ganesh', 'Swati', 'Rajesh', 'Bhavna',
+    'Harish', 'Nisha', 'Ramesh', 'Aarti', 'Suresh', 'Revathi', 'Dinesh', 'Uma'
+  ];
+  const lastNames = [
+    'Kumar', 'Dharshini', 'Viswanathan', 'Sundaram', 'Chandran', 'Raghavan', 'Narayanan',
+    'Subramanian', 'Bharathi', 'Banerjee', 'Sharma', 'Patel', 'Verma', 'Singh',
+    'Iyer', 'Reddy', 'Nair', 'Rao', 'Deshmukh', 'Joshi', 'Pillai', 'Gowda'
+  ];
+  let hash = 0;
+  const str = voterId || 'VOT1000001';
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  const absHash = Math.abs(hash);
+  const fn = firstNames[absHash % firstNames.length];
+  const ln = lastNames[Math.floor(absHash / firstNames.length) % lastNames.length];
+  return `${fn} ${ln}`;
+}
+
 // 2. Verify Voter ID
 app.post('/api/voter/verify', (req, res) => {
   const { voterId } = req.body;
@@ -179,22 +203,20 @@ app.post('/api/voter/verify', (req, res) => {
   }
 
   const cleanId = voterId.trim().toUpperCase();
-  const voter = db.voters.find(v => v.id === cleanId);
+  let voter = db.voters.find(v => v.id === cleanId);
 
+  // Auto-register any new valid Voter ID with a unique generated name
   if (!voter) {
-    // Record security log for invalid ID attempt
-    const alertLog = {
-      id: `LOG_${Date.now()}`,
-      timestamp: new Date().toISOString(),
-      type: 'SECURITY_ALERT',
-      sourceIp: req.ip || '192.168.20.10',
-      message: `AUTH_FAILED: Unregistered Voter ID attempt '${cleanId}'`,
-      hash: crypto.createHash('sha256').update(`FAIL_${cleanId}_${Date.now()}`).digest('hex')
+    const generatedName = generateVoterName(cleanId);
+    voter = {
+      id: cleanId,
+      name: generatedName,
+      booth: 'Zone 1 (Red)',
+      status: 'REGISTERED',
+      voted: false
     };
-    db.auditLogs.unshift(alertLog);
+    db.voters.push(voter);
     saveDB();
-
-    return res.status(404).json({ success: false, message: 'Voter ID not found in Electoral Roll.' });
   }
 
   if (voter.voted) {
@@ -210,7 +232,7 @@ app.post('/api/voter/verify', (req, res) => {
     db.auditLogs.unshift(alertLog);
     saveDB();
 
-    return res.status(403).json({ success: false, message: 'ACCESS DENIED: Voter has ALREADY cast their vote! Double voting is blocked by central security policy.' });
+    return res.status(403).json({ success: false, message: `ACCESS DENIED: Voter ${voter.id} (${voter.name}) has ALREADY cast their vote! Double voting is blocked by central security policy.` });
   }
 
   res.json({
