@@ -1,5 +1,5 @@
 // Cisco Packet Tracer Interactive Canvas Visualizer
-// Two-Node Click Ping with Router0 Inter-VLAN Routing Simulation
+// Ultra-Fast Packet Animation & Instant 2-Node Router0 Ping Simulation
 let canvas, ctx;
 let activePackets = [];
 let pingSourceNode = null;
@@ -89,7 +89,7 @@ function initTopologyCanvas() {
   window.addEventListener('resize', resizeCanvas);
   resizeCanvas();
 
-  // Canvas Click Handler: Click 2 Nodes to Ping via Router0
+  // Canvas Click Handler: Instant 2-Node Selection
   canvas.addEventListener('click', (e) => {
     const rect = canvas.getBoundingClientRect();
     const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
@@ -115,29 +115,27 @@ function initTopologyCanvas() {
 }
 
 function handleNodeClick(node) {
-  // If no source is selected yet, or if both were selected, set as Source Node
   if (!pingSourceNode || (pingSourceNode && pingTargetNode)) {
     pingSourceNode = node;
     pingTargetNode = null;
 
     updateDetailBox(`
       <div style="color: #60a5fa; font-weight: bold;">
-        📍 Source Node Selected: ${node.name} (${node.ip})
+        📍 Source Selected: ${node.name} (${node.ip})
       </div>
       <div style="color: #f59e0b; margin-top: 0.2rem;">
-        👉 Now click any SECOND node on the canvas to Ping via Router0 Gateway...
+        👉 Now click 2nd Target Node to Ping instantly...
       </div>
     `);
 
     const badge = document.getElementById('topoSelectedNodeBadge');
     if (badge) badge.textContent = `Source: ${node.name}`;
 
-    showAlert(`📍 Source Node '${node.name}' selected. Now click Target Node to Ping!`, 'info');
+    showAlert(`📍 Source '${node.name}' selected. Click target node!`, 'info');
   } 
-  // Second click: Target Node selected!
   else if (pingSourceNode && !pingTargetNode) {
     if (pingSourceNode.id === node.id) {
-      showAlert('Please select a DIFFERENT target node to ping!', 'warning');
+      showAlert('Please select a DIFFERENT target node!', 'warning');
       return;
     }
 
@@ -146,7 +144,6 @@ function handleNodeClick(node) {
     const badge = document.getElementById('topoSelectedNodeBadge');
     if (badge) badge.textContent = `Ping: ${pingSourceNode.name} ➔ ${pingTargetNode.name}`;
 
-    // Execute Ping via Router0 Gateway
     executeRouterPing(pingSourceNode, pingTargetNode);
   }
 }
@@ -165,64 +162,41 @@ function executeRouterPing(src, tgt) {
   const srcSwitch = getSubnetSwitch(src.id);
   const tgtSwitch = getSubnetSwitch(tgt.id);
 
-  // Path from Source -> Switch -> Multilayer Switch -> Router0 -> Multilayer Switch -> Target Switch -> Target
   let requestPath = [src.id];
   if (srcSwitch !== src.id) requestPath.push(srcSwitch);
-  requestPath.push('mswitch0', 'router0'); // Goes to Router0!
+  requestPath.push('mswitch0', 'router0'); // Goes to Router0 Gateway!
   if (tgtSwitch !== tgt.id) requestPath.push(tgtSwitch);
   requestPath.push(tgt.id);
 
-  // Echo Reply Path back from Target -> Router0 -> Source
   let replyPath = [tgt.id];
   if (tgtSwitch !== tgt.id) replyPath.push(tgtSwitch);
   replyPath.push('mswitch0', 'router0');
   if (srcSwitch !== src.id) replyPath.push(srcSwitch);
   replyPath.push(src.id);
 
-  // 1. Animate Request Packet (Blue Glow)
-  animatePacketRoute(requestPath, '#3b82f6');
+  // High-Speed Packet Animation: 0.12 speed & 80ms delay (3x faster!)
+  animatePacketRoute(requestPath, '#3b82f6', 0.12, 80);
 
-  // 2. Animate Reply Packet (Green Glow) after request arrives
   setTimeout(() => {
-    animatePacketRoute(replyPath, '#10b981');
-  }, requestPath.length * 300);
+    animatePacketRoute(replyPath, '#10b981', 0.12, 80);
+  }, requestPath.length * 80);
 
-  // Update Hop Tracer Inspector Box
   updateDetailBox(`
-    <div style="color: #10b981; font-weight: bold; margin-bottom: 0.4rem;">
-      📡 ICMP Echo Ping Transmitted: ${src.name} (${src.ip}) ➔ ${tgt.name} (${tgt.ip})
+    <div style="color: #10b981; font-weight: bold; margin-bottom: 0.3rem;">
+      📡 ICMP Echo Ping: ${src.name} (${src.ip}) ➔ Router0 (.1.1) ➔ ${tgt.name} (${tgt.ip})
     </div>
-    <div style="margin-bottom: 0.3rem;">
-      <strong>1. ICMP Request Path (via Gateway Router0):</strong>
-      <div style="color: #60a5fa; font-size: 0.8rem; margin-top: 0.2rem;">
-        ${requestPath.map(id => { const n = topoNodes.find(item => item.id === id); return n ? n.name : id; }).join(' ➔ ')}
-      </div>
+    <div style="margin-bottom: 0.2rem; font-size: 0.8rem; color: #60a5fa;">
+      <strong>Request:</strong> ${requestPath.map(id => { const n = topoNodes.find(item => item.id === id); return n ? n.name : id; }).join(' ➔ ')}
     </div>
-    <div>
-      <strong>2. ICMP Reply Path (via Gateway Router0):</strong>
-      <div style="color: #34d399; font-size: 0.8rem; margin-top: 0.2rem;">
-        ${replyPath.map(id => { const n = topoNodes.find(item => item.id === id); return n ? n.name : id; }).join(' ➔ ')}
-      </div>
+    <div style="font-size: 0.8rem; color: #34d399;">
+      <strong>Reply:</strong> ${replyPath.map(id => { const n = topoNodes.find(item => item.id === id); return n ? n.name : id; }).join(' ➔ ')}
     </div>
-    <div style="color: #9ca3af; font-size: 0.78rem; margin-top: 0.4rem;">
-      Status: 4 Packets Sent, 4 Received (0% Loss) | Round Trip Time: 2ms | Core Gateway Router0 (.1.1) Active
+    <div style="color: #9ca3af; font-size: 0.75rem; margin-top: 0.3rem;">
+      RTT = 1ms | Packets: 4 Sent, 4 Received | Router0 Gateway Active
     </div>
   `);
 
-  showAlert(`📡 Ping Packet traveling from ${src.name} ➔ Router0 Gateway ➔ ${tgt.name}!`, 'success');
-}
-
-function resetPingSelection() {
-  pingSourceNode = null;
-  pingTargetNode = null;
-  drawTopology();
-
-  const badge = document.getElementById('topoSelectedNodeBadge');
-  if (badge) badge.textContent = 'Selection Cleared';
-
-  updateDetailBox(`
-    <div>Click any node on the canvas to set as <strong>Source Node</strong>, then click a second node to <strong>Ping via Router0 Gateway</strong>!</div>
-  `);
+  showAlert(`⚡ Instant Ping: ${src.name} ➔ Router0 Gateway ➔ ${tgt.name}!`, 'success');
 }
 
 function updateDetailBox(html) {
@@ -241,7 +215,7 @@ function drawTopology() {
   drawZoneBox(775, 230, 150, 250, 'rgba(236, 72, 153, 0.12)', '#ec4899', 'BOOTH 3 (VLAN 40)');
   drawZoneBox(955, 230, 175, 280, 'rgba(245, 158, 11, 0.12)', '#f59e0b', 'ADMIN MONITORING (VLAN 50)');
 
-  // Link Cables with LEDs
+  // Link Cables
   topoLinks.forEach(link => {
     const fromNode = topoNodes.find(n => n.id === link.from);
     const toNode = topoNodes.find(n => n.id === link.to);
@@ -269,7 +243,6 @@ function drawTopology() {
     const isSource = pingSourceNode && pingSourceNode.id === node.id;
     const isTarget = pingTargetNode && pingTargetNode.id === node.id;
 
-    // Glowing Ring for Source Selection (Blue)
     if (isSource) {
       ctx.beginPath();
       ctx.arc(node.x, node.y, 28, 0, Math.PI * 2);
@@ -280,7 +253,6 @@ function drawTopology() {
       ctx.stroke();
     }
 
-    // Glowing Ring for Target Selection (Green)
     if (isTarget) {
       ctx.beginPath();
       ctx.arc(node.x, node.y, 28, 0, Math.PI * 2);
@@ -291,7 +263,6 @@ function drawTopology() {
       ctx.stroke();
     }
 
-    // Node Base Circle
     ctx.beginPath();
     ctx.arc(node.x, node.y, 20, 0, Math.PI * 2);
     ctx.fillStyle = '#1e293b';
@@ -300,18 +271,15 @@ function drawTopology() {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Device Icon
     ctx.font = '16px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(node.icon, node.x, node.y);
 
-    // Device Name Label
     ctx.font = 'bold 11px sans-serif';
     ctx.fillStyle = isSource ? '#60a5fa' : (isTarget ? '#34d399' : '#e2e8f0');
     ctx.fillText(node.name, node.x, node.y + 32);
 
-    // IP Label
     ctx.font = '9px monospace';
     ctx.fillStyle = '#94a3b8';
     ctx.fillText(node.ip, node.x, node.y + 44);
@@ -361,7 +329,7 @@ function drawLinkLed(x1, y1, x2, y2) {
   ctx.stroke();
 }
 
-function animatePacketRoute(nodePath, color = '#10b981') {
+function animatePacketRoute(nodePath, color = '#10b981', speed = 0.12, hopDelay = 80) {
   for (let i = 0; i < nodePath.length - 1; i++) {
     const fromId = nodePath[i];
     const toId = nodePath[i + 1];
@@ -379,10 +347,10 @@ function animatePacketRoute(nodePath, color = '#10b981') {
           currentX: fromNode.x,
           currentY: fromNode.y,
           progress: 0,
-          speed: 0.04,
+          speed: speed,
           color: color
         });
-      }, i * 300);
+      }, i * hopDelay);
     }
   }
 }

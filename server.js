@@ -19,6 +19,10 @@ app.use((err, req, res, next) => {
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/voters', express.static(path.join(__dirname, 'voters')));
+app.use('/monitoring', express.static(path.join(__dirname, 'monitoring')));
+app.use('/admin', express.static(path.join(__dirname, 'admin')));
+
 
 // In-Memory Database with optional JSON file backup
 const DB_FILE = path.join(__dirname, 'data', 'database.json');
