@@ -237,17 +237,30 @@
     <!-- TAB 3: PACKET TRACER MAP -->
     <div id="tab-topology" class="tab-content">
       <div class="card">
-        <div class="card-header">
+        <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
           <div>
-            <h2 class="card-title">🌐 Cisco Packet Tracer Network Topology Simulation</h2>
+            <h2 class="card-title">🌐 Cisco Packet Tracer Interactive Network Simulator</h2>
             <p style="font-size: 0.8rem; color: var(--text-muted);">Exact visual representation of the project network diagram (Router0, Multilayer Switch0, Server Farm & Booth Subnets 1-4)</p>
           </div>
-          <div style="display: flex; gap: 0.5rem;">
-            <button class="btn-primary" style="padding: 0.5rem 1rem; width: auto;" onclick="triggerDemoPacket()">
-              <span>🚀</span> Simulate Vote Packet Trace
-            </button>
-            <button class="btn-primary" style="padding: 0.5rem 1rem; width: auto; background: #8b5cf6;" onclick="triggerPingTest()">
-              <span>📡</span> Ping All Nodes
+
+          <!-- Interactive Custom Packet Generator Controls -->
+          <div style="display: flex; gap: 0.6rem; align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 10px; border: 1px solid var(--border-color); flex-wrap: wrap;">
+            <span style="font-size: 0.78rem; color: #60a5fa; font-weight: bold;">📡 Send ICMP Packet:</span>
+            <select id="packetSourceSelect" class="form-select" style="padding: 0.3rem 0.6rem; font-size: 0.78rem; width: 140px;">
+              <option value="pc0">PC0 (Booth 1)</option>
+              <option value="pc2">PC2 (Booth 2)</option>
+              <option value="pc4">PC4 (Booth 3)</option>
+              <option value="pc8">PC8 (Admin PC)</option>
+            </select>
+            <span style="font-size: 0.78rem; color: var(--text-muted);">➔</span>
+            <select id="packetTargetSelect" class="form-select" style="padding: 0.3rem 0.6rem; font-size: 0.78rem; width: 150px;">
+              <option value="web_server">WEB Server (.10.10)</option>
+              <option value="db_server">Server0 DB (.10.12)</option>
+              <option value="audit_server">Server3 Audit (.10.13)</option>
+              <option value="router0">Router0 (.1.1)</option>
+            </select>
+            <button class="btn-primary" style="padding: 0.35rem 0.8rem; font-size: 0.78rem; width: auto;" onclick="sendCustomPacket()">
+              🚀 Ping Packet
             </button>
           </div>
         </div>
@@ -279,10 +292,14 @@
           </div>
         </div>
 
+        <!-- Live Step-by-Step Packet Trace Stream Console -->
         <div style="margin-top: 1rem; background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
-          <h4 style="margin-bottom: 0.5rem; color: #60a5fa;">💡 Click on any router, switch, or server above to view detailed IP config, MAC address, and traffic metrics!</h4>
-          <div id="nodeDetailBox" style="font-family: monospace; font-size: 0.85rem; color: #d1d5db;">
-            Select a network device from the canvas to inspect...
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <h4 style="color: #60a5fa; font-size: 0.9rem;">💡 Device Inspector & Real-Time Hop Tracer (Click any node above to inspect)</h4>
+            <span class="badge badge-info" id="topoSelectedNodeBadge">Selected: None</span>
+          </div>
+          <div id="nodeDetailBox" style="font-family: monospace; font-size: 0.85rem; color: #d1d5db; line-height: 1.5;">
+            Click on any router, switch, or server above to open the Cisco Device Configuration Inspector...
           </div>
         </div>
       </div>
@@ -364,6 +381,23 @@
       </div>
     </div>
 
+  </div>
+
+
+  <!-- MODAL: CISCO DEVICE INSPECTOR -->
+  <div class="modal-backdrop" id="ciscoInspectorModal">
+    <div class="modal-box" style="max-width: 680px;">
+      <div class="modal-header">
+        <h2 style="font-size: 1.2rem; color: #60a5fa; display: flex; align-items: center; gap: 0.6rem;">
+          <span id="ciscoDeviceIcon">🖥️</span> <span id="ciscoDeviceTitle">Cisco Device Inspector</span>
+        </h2>
+        <button style="background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;" onclick="closeCiscoInspector()">✕</button>
+      </div>
+
+      <div id="ciscoDeviceBody">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
   </div>
 
 
