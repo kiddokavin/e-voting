@@ -234,27 +234,27 @@
         <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
           <div>
             <h2 class="card-title">🌐 Cisco Packet Tracer Interactive Network Simulator</h2>
-            <p style="font-size: 0.8rem; color: var(--text-muted);">Centralized E-Voting Network Topology (Router0, Multilayer Switch0, Server Farm & Booth VLANs 10-50)</p>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Centralized E-Voting Network Topology Working Model (Click any 2 nodes to ping via Router0 Gateway)</p>
           </div>
 
           <!-- Interactive Custom Packet Generator Controls -->
           <div style="display: flex; gap: 0.6rem; align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 10px; border: 1px solid var(--border-color); flex-wrap: wrap;">
             <span style="font-size: 0.78rem; color: #60a5fa; font-weight: bold;">📡 Send ICMP Packet:</span>
             <select id="packetSourceSelect" class="form-select" style="padding: 0.3rem 0.6rem; font-size: 0.78rem; width: 140px;">
-              <option value="PC0">PC0 (Booth 1)</option>
-              <option value="PC1">PC1 (Booth 1)</option>
-              <option value="PC2">PC2 (Booth 2)</option>
-              <option value="PC4">PC4 (Booth 3)</option>
-              <option value="PC6">PC6 (Admin PC)</option>
-              <option value="Server0">Server0 (DB Server)</option>
+              <option value="pc0">PC0 (Booth 1)</option>
+              <option value="pc1">PC1 (Booth 1)</option>
+              <option value="pc2">PC2 (Booth 2)</option>
+              <option value="pc4">PC4 (Booth 3)</option>
+              <option value="pc8">PC8 (Admin PC)</option>
+              <option value="db_server">Server0 (DB Server)</option>
             </select>
             <span style="font-size: 0.78rem; color: var(--text-muted);">➔</span>
             <select id="packetTargetSelect" class="form-select" style="padding: 0.3rem 0.6rem; font-size: 0.78rem; width: 160px;">
-              <option value="Server4">Server4 (Security CA)</option>
-              <option value="WEB Server">WEB Server (.10.10)</option>
-              <option value="Server0">Server0 DB (.10.12)</option>
-              <option value="Server3">Server3 Audit (.10.13)</option>
-              <option value="Router0">Router0 Gateway (.1.1)</option>
+              <option value="sec_server">Server4 (Security CA)</option>
+              <option value="web_server">WEB Server (.10.10)</option>
+              <option value="db_server">Server0 DB (.10.12)</option>
+              <option value="audit_server">Server3 Audit (.10.13)</option>
+              <option value="router0">Router0 Gateway (.1.1)</option>
               <option value="192.168.99.250">Offline IP (192.168.99.250)</option>
             </select>
             <button class="btn-primary" style="padding: 0.35rem 0.8rem; font-size: 0.78rem; width: auto;" onclick="sendCustomPacket()">
@@ -263,12 +263,31 @@
           </div>
         </div>
 
-        <!-- Official Cisco Packet Tracer Interface Screen with Interactive Clickable Hotspots -->
-        <div id="ciscoMapContainer" style="border: 2px solid #3b82f6; border-radius: 12px; overflow: hidden; background: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.6); position: relative;">
-          <img id="ciscoImg" src="img/cisco_topology.png" alt="Cisco Packet Tracer Network Topology Diagram" style="width: 100%; display: block; border-bottom: 2px solid #3b82f6;">
-          <canvas id="ciscoOverlayCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;"></canvas>
-          <div id="ciscoHotspotsContainer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;">
-            <!-- Populated dynamically with interactive glowing device hotspots -->
+        <!-- Live Cisco Packet Tracer Working Model Canvas Visualizer -->
+        <div class="topology-container">
+          <canvas id="topologyCanvas"></canvas>
+
+          <div class="topo-legend">
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--zone-blue-border);"></div>
+              <span>Blue Zone: Server Farm</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--zone-red-border);"></div>
+              <span>Red Zone: Booth 1</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--zone-green-border);"></div>
+              <span>Green Zone: Booth 2</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--zone-pink-border);"></div>
+              <span>Pink Zone: Booth 3</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--zone-yellow-border);"></div>
+              <span>Yellow Zone: Central Admin</span>
+            </div>
           </div>
         </div>
 
