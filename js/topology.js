@@ -300,7 +300,7 @@ function executeRouterPing(srcParam, tgtParam, forceFail = false) {
 
   if (forceFail) {
     const failPath = [srcNode.id, getSubnetSwitch(srcNode.id), 'mswitch0', 'router0'];
-    animatePacketRoute(failPath, '#ef4444', 0.12, 80);
+    animatePacketRoute(failPath, '#ef4444', 0.35, 20);
 
     updateDetailBox(`
       <div style="background:#0f172a; padding:12px; border-radius:8px; border:1px solid #ef4444; font-family:monospace;">
@@ -344,12 +344,12 @@ function executeRouterPing(srcParam, tgtParam, forceFail = false) {
   if (srcSwitch !== srcNode.id) replyPath.push(srcSwitch);
   replyPath.push(srcNode.id);
 
-  // High-Speed Packet Animation
-  animatePacketRoute(requestPath, '#3b82f6', 0.12, 80);
+  // Lightning Ultra-Fast Packet Animation (0.35 speed, 20ms hop delay)
+  animatePacketRoute(requestPath, '#3b82f6', 0.35, 20);
 
   setTimeout(() => {
-    animatePacketRoute(replyPath, '#10b981', 0.12, 80);
-  }, requestPath.length * 80);
+    animatePacketRoute(replyPath, '#10b981', 0.35, 20);
+  }, requestPath.length * 20);
 
   updateDetailBox(`
     <div style="background:#0f172a; padding:12px; border-radius:8px; border:1px solid #10b981; font-family:monospace;">
@@ -535,7 +535,7 @@ function drawLinkLed(x1, y1, x2, y2) {
   ctx.stroke();
 }
 
-function animatePacketRoute(nodePath, color = '#10b981', speed = 0.12, hopDelay = 80) {
+function animatePacketRoute(nodePath, color = '#10b981', speed = 0.35, hopDelay = 20) {
   for (let i = 0; i < nodePath.length - 1; i++) {
     const fromId = nodePath[i];
     const toId = nodePath[i + 1];
