@@ -261,6 +261,34 @@ function clearCiscoPduTable() {
   if (typeof showAlert === 'function') showAlert('Cisco PDU Simulation Window Cleared.', 'info');
 }
 
+const dynamicCiscoPingRoutes = [
+  // Booth 1 (Red Zone) to Server Farm
+  { src: 'pc0', tgt: 'sec_server', fail: false },
+  { src: 'pc1', tgt: 'web_server', fail: false },
+  { src: 'pc0', tgt: 'db_server', fail: false },
+  
+  // Booth 2 (Green Zone) to Server Farm & Core Gateway
+  { src: 'pc2', tgt: 'audit_server', fail: false },
+  { src: 'pc3', tgt: 'sec_server', fail: false },
+  { src: 'pc2', tgt: 'router0', fail: false },
+  
+  // Booth 3 (Pink Zone) to Server Farm
+  { src: 'pc4', tgt: 'web_server', fail: false },
+  { src: 'pc5', tgt: 'db_server', fail: false },
+  { src: 'pc4', tgt: 'audit_server', fail: false },
+
+  // Admin Monitoring (Yellow Zone) to Core & Server Farm
+  { src: 'pc8', tgt: 'router0', fail: false },
+  { src: 'pc6', tgt: 'audit_server', fail: false },
+  { src: 'pc7', tgt: 'sec_server', fail: false },
+
+  // Intrasubnet Server Farm Pings
+  { src: 'web_server', tgt: 'db_server', fail: false },
+  { src: 'sec_server', tgt: 'audit_server', fail: false }
+];
+
+let pingRouteIndex = 0;
+
 function sendCustomPacket() {
   const srcId = document.getElementById('packetSourceSelect').value;
   const tgtId = document.getElementById('packetTargetSelect').value;
@@ -273,15 +301,23 @@ function sendCustomPacket() {
 }
 
 function triggerTestPingSuccess() {
-  const srcNode = topoNodes.find(n => n.id === 'pc0');
-  const tgtNode = topoNodes.find(n => n.id === 'sec_server');
-  executeRouterPing(srcNode, tgtNode, false);
+  const route = dynamicCiscoPingRoutes[pingRouteIndex % dynamicCiscoPingRoutes.length];
+  pingRouteIndex++;
+
+  const srcNode = topoNodes.find(n => n.id === route.src);
+  const tgtNode = topoNodes.find(n => n.id === route.tgt);
+
+  executeRouterPing(srcNode || route.src, tgtNode || route.tgt, false);
 }
 
 function triggerTestPingFail() {
-  const srcNode = topoNodes.find(n => n.id === 'pc0');
-  const tgtNode = { id: 'offline_target', name: 'Unknown Target (192.168.99.250)', ip: '192.168.99.250' };
-  executeRouterPing(srcNode, tgtNode, true);
+  const failSources = ['pc0', 'pc2', 'pc4', 'pc8'];
+  const srcId = failSources[pingRouteIndex % failSources.length];
+  pingRouteIndex++;
+
+  const srcNode = topoNodes.find(n => n.id === srcId);
+  const tgtNode = { id: 'offline_target', name: `Unknown Target (192.168.99.${200 + (pingRouteIndex % 50)})`, ip: `192.168.99.${200 + (pingRouteIndex % 50)}` };
+  executeRouterPing(srcNode || srcId, tgtNode, true);
 }
 
 function executeRouterPing(srcParam, tgtParam, forceFail = false) {
