@@ -12,32 +12,32 @@ const topoNodes = [
 
   // Server Farm (Blue Zone - VLAN 10)
   { id: 'switch0', name: 'Switch0', model: 'Cisco Catalyst 2960-24TT', type: 'SWITCH', ip: '192.168.10.1', mask: '255.255.255.0', mac: '00D0.BA11.0001', x: 260, y: 220, icon: '🎛️' },
-  { id: 'db_server', name: 'Server0 (DB Server)', model: 'Cisco Server-PT', type: 'SERVER', ip: '192.168.10.12', mask: '255.255.255.0', mac: '0060.702B.DB01', x: 180, y: 310, icon: '🗄️' },
-  { id: 'web_server', name: 'WEB Server', model: 'Cisco Server-PT', type: 'SERVER', ip: '192.168.10.10', mask: '255.255.255.0', mac: '0060.702B.WEB1', x: 340, y: 310, icon: '🖥️' },
-  { id: 'dns_server', name: 'DNS Server', model: 'Cisco Server-PT', type: 'SERVER', ip: '192.168.10.11', mask: '255.255.255.0', mac: '0060.702B.DNS1', x: 180, y: 420, icon: '🌍' },
-  { id: 'audit_server', name: 'Server3 (Audit)', model: 'Cisco Server-PT', type: 'SERVER', ip: '192.168.10.13', mask: '255.255.255.0', mac: '0060.702B.AUD3', x: 340, y: 420, icon: '📊' },
-  { id: 'sec_server', name: 'Server4 (Security)', model: 'Cisco Server-PT', type: 'SERVER', ip: '192.168.10.14', mask: '255.255.255.0', mac: '0060.702B.SEC4', x: 260, y: 480, icon: '🛡️' },
+  { id: 'db_server', name: 'Server0', model: 'Cisco Server-PT', type: 'SERVER', ip: '192.168.10.12', mask: '255.255.255.0', mac: '0060.702B.DB01', x: 180, y: 310, icon: '🗄️' },
+  { id: 'web_server', name: 'Server1', model: 'Cisco Server-PT', type: 'SERVER', ip: '192.168.10.10', mask: '255.255.255.0', mac: '0060.702B.WEB1', x: 340, y: 310, icon: '🖥️' },
+  { id: 'dns_server', name: 'Server2', model: 'Cisco Server-PT', type: 'SERVER', ip: '192.168.10.11', mask: '255.255.255.0', mac: '0060.702B.DNS1', x: 180, y: 420, icon: '🌍' },
+  { id: 'audit_server', name: 'Server3', model: 'Cisco Server-PT', type: 'SERVER', ip: '192.168.10.13', mask: '255.255.255.0', mac: '0060.702B.AUD3', x: 340, y: 420, icon: '📊' },
+  { id: 'sec_server', name: 'Server4', model: 'Cisco Server-PT', type: 'SERVER', ip: '192.168.10.14', mask: '255.255.255.0', mac: '0060.702B.SEC4', x: 260, y: 480, icon: '🛡️' },
 
   // Booth 1 (Red Zone - VLAN 20)
   { id: 'switch1', name: 'Switch1', model: 'Cisco Catalyst 2960-24TT', type: 'SWITCH', ip: '192.168.20.1', mask: '255.255.255.0', mac: '00E0.8F11.0002', x: 490, y: 260, icon: '🎛️' },
-  { id: 'pc0', name: 'PC0 (Booth 1)', model: 'Generic PC-PT', type: 'PC', ip: '192.168.20.10', mask: '255.255.255.0', mac: '0001.42A3.PC01', x: 450, y: 400, icon: '💻' },
-  { id: 'pc1', name: 'PC1 (Booth 1)', model: 'Generic PC-PT', type: 'PC', ip: '192.168.20.11', mask: '255.255.255.0', mac: '0001.42A3.PC02', x: 530, y: 400, icon: '💻' },
+  { id: 'pc0', name: 'PC0', model: 'Generic PC-PT', type: 'PC', ip: '192.168.20.10', mask: '255.255.255.0', mac: '0001.42A3.PC01', x: 450, y: 400, icon: '💻' },
+  { id: 'pc1', name: 'PC1', model: 'Generic PC-PT', type: 'PC', ip: '192.168.20.11', mask: '255.255.255.0', mac: '0001.42A3.PC02', x: 530, y: 400, icon: '💻' },
 
   // Booth 2 (Green Zone - VLAN 30)
   { id: 'switch2', name: 'Switch2', model: 'Cisco Catalyst 2960-24TT', type: 'SWITCH', ip: '192.168.30.1', mask: '255.255.255.0', mac: '00E0.8F11.0003', x: 670, y: 260, icon: '🎛️' },
-  { id: 'pc2', name: 'PC2 (Booth 2)', model: 'Generic PC-PT', type: 'PC', ip: '192.168.30.10', mask: '255.255.255.0', mac: '0001.42A3.PC03', x: 630, y: 400, icon: '💻' },
-  { id: 'pc3', name: 'PC3 (Booth 2)', model: 'Generic PC-PT', type: 'PC', ip: '192.168.30.11', mask: '255.255.255.0', mac: '0001.42A3.PC04', x: 710, y: 400, icon: '💻' },
+  { id: 'pc2', name: 'PC2', model: 'Generic PC-PT', type: 'PC', ip: '192.168.30.10', mask: '255.255.255.0', mac: '0001.42A3.PC03', x: 630, y: 400, icon: '💻' },
+  { id: 'pc3', name: 'PC3', model: 'Generic PC-PT', type: 'PC', ip: '192.168.30.11', mask: '255.255.255.0', mac: '0001.42A3.PC04', x: 710, y: 400, icon: '💻' },
 
   // Booth 3 (Pink Zone - VLAN 40)
   { id: 'switch3', name: 'Switch3', model: 'Cisco Catalyst 2960-24TT', type: 'SWITCH', ip: '192.168.40.1', mask: '255.255.255.0', mac: '00E0.8F11.0004', x: 850, y: 260, icon: '🎛️' },
-  { id: 'pc4', name: 'PC4 (Booth 3)', model: 'Generic PC-PT', type: 'PC', ip: '192.168.40.10', mask: '255.255.255.0', mac: '0001.42A3.PC05', x: 810, y: 400, icon: '💻' },
-  { id: 'pc5', name: 'PC5 (Booth 3)', model: 'Generic PC-PT', type: 'PC', ip: '192.168.40.11', mask: '255.255.255.0', mac: '0001.42A3.PC06', x: 890, y: 400, icon: '💻' },
+  { id: 'pc4', name: 'PC4', model: 'Generic PC-PT', type: 'PC', ip: '192.168.40.10', mask: '255.255.255.0', mac: '0001.42A3.PC05', x: 810, y: 400, icon: '💻' },
+  { id: 'pc5', name: 'PC5', model: 'Generic PC-PT', type: 'PC', ip: '192.168.40.11', mask: '255.255.255.0', mac: '0001.42A3.PC06', x: 890, y: 400, icon: '💻' },
 
   // Admin Monitoring (Yellow Zone - VLAN 50)
   { id: 'switch4', name: 'Switch4', model: 'Cisco Catalyst 2960-24TT', type: 'SWITCH', ip: '192.168.50.1', mask: '255.255.255.0', mac: '00E0.8F11.0005', x: 1040, y: 260, icon: '🎛️' },
-  { id: 'pc6', name: 'PC6 (Monitoring)', model: 'Generic PC-PT', type: 'PC', ip: '192.168.50.10', mask: '255.255.255.0', mac: '0001.42A3.PC07', x: 990, y: 390, icon: '💻' },
-  { id: 'pc7', name: 'PC7 (Monitoring)', model: 'Generic PC-PT', type: 'PC', ip: '192.168.50.11', mask: '255.255.255.0', mac: '0001.42A3.PC08', x: 1040, y: 470, icon: '💻' },
-  { id: 'pc8', name: 'PC8 (Officer PC)', model: 'Generic PC-PT', type: 'PC', ip: '192.168.50.12', mask: '255.255.255.0', mac: '0001.42A3.PC09', x: 1090, y: 390, icon: '💻' }
+  { id: 'pc6', name: 'PC6', model: 'Generic PC-PT', type: 'PC', ip: '192.168.50.10', mask: '255.255.255.0', mac: '0001.42A3.PC07', x: 990, y: 390, icon: '💻' },
+  { id: 'pc7', name: 'PC7', model: 'Generic PC-PT', type: 'PC', ip: '192.168.50.11', mask: '255.255.255.0', mac: '0001.42A3.PC08', x: 1040, y: 470, icon: '💻' },
+  { id: 'pc8', name: 'PC8', model: 'Generic PC-PT', type: 'PC', ip: '192.168.50.12', mask: '255.255.255.0', mac: '0001.42A3.PC09', x: 1090, y: 390, icon: '💻' }
 ];
 
 const topoLinks = [
@@ -205,9 +205,9 @@ function updateBoothPowerUI() {
   // Update Voter Terminal dropdown labels
   const select = document.getElementById('boothSelect');
   if (select && select.options.length >= 3) {
-    select.options[0].text = boothStatus.booth1.online ? 'Booth 1 - Red Zone (Subnet 192.168.20.0/24)' : 'Booth 1 - Red Zone [🔴 OFFLINE / POWERED OFF]';
-    select.options[1].text = boothStatus.booth2.online ? 'Booth 2 - Green Zone (Subnet 192.168.30.0/24)' : 'Booth 2 - Green Zone [🔴 OFFLINE / POWERED OFF]';
-    select.options[2].text = boothStatus.booth3.online ? 'Booth 3 - Pink Zone (Subnet 192.168.40.0/24)' : 'Booth 3 - Pink Zone [🔴 OFFLINE / POWERED OFF]';
+    select.options[0].text = boothStatus.booth1.online ? 'Booth 1 - Red Zone' : 'Booth 1 - Red Zone [🔴 OFFLINE / POWERED OFF]';
+    select.options[1].text = boothStatus.booth2.online ? 'Booth 2 - Green Zone' : 'Booth 2 - Green Zone [🔴 OFFLINE / POWERED OFF]';
+    select.options[2].text = boothStatus.booth3.online ? 'Booth 3 - Pink Zone' : 'Booth 3 - Pink Zone [🔴 OFFLINE / POWERED OFF]';
   }
 
   // Update Warning banner in Voter Terminal
@@ -438,7 +438,7 @@ function sendCustomPacket() {
   const srcNode = topoNodes.find(n => n.id.toLowerCase() === srcId.toLowerCase() || n.name.toLowerCase().includes(srcId.toLowerCase()));
   const tgtNode = topoNodes.find(n => n.id.toLowerCase() === tgtId.toLowerCase() || n.name.toLowerCase().includes(tgtId.toLowerCase()) || n.ip === tgtId);
 
-  const isFailed = tgtId.includes('192.168.99.250');
+  const isFailed = tgtId === 'offline_target' || tgtId.includes('offline') || tgtId.includes('192.168.99.250');
   executeRouterPing(srcNode || srcId, tgtNode || tgtId, isFailed);
 }
 
@@ -467,23 +467,21 @@ function triggerTestPingFail() {
   pingRouteIndex++;
 
   const srcNode = topoNodes.find(n => n.id === srcId);
-  const tgtNode = { id: 'offline_target', name: `Unknown Target (192.168.99.${200 + (pingRouteIndex % 50)})`, ip: `192.168.99.${200 + (pingRouteIndex % 50)}` };
+  const tgtNode = { id: 'offline_target', name: 'Offline Node', ip: '0.0.0.0' };
   executeRouterPing(srcNode || srcId, tgtNode, true);
 }
 
 function executeRouterPing(srcParam, tgtParam, forceFail = false) {
   pduCounter++;
 
-  const srcNode = (typeof srcParam === 'object') ? srcParam : (topoNodes.find(n => n.id.toLowerCase() === String(srcParam).toLowerCase() || n.name.toLowerCase().includes(String(srcParam).toLowerCase())) || { id: srcParam, name: String(srcParam), ip: '192.168.20.10' });
-  const tgtNode = (typeof tgtParam === 'object') ? tgtParam : (topoNodes.find(n => n.id.toLowerCase() === String(tgtParam).toLowerCase() || n.name.toLowerCase().includes(String(tgtParam).toLowerCase())) || { id: tgtParam, name: String(tgtParam), ip: '192.168.10.10' });
+  const srcNode = (typeof srcParam === 'object') ? srcParam : (topoNodes.find(n => n.id.toLowerCase() === String(srcParam).toLowerCase() || n.name.toLowerCase().includes(String(srcParam).toLowerCase())) || { id: srcParam, name: String(srcParam) });
+  const tgtNode = (typeof tgtParam === 'object') ? tgtParam : (topoNodes.find(n => n.id.toLowerCase() === String(tgtParam).toLowerCase() || n.name.toLowerCase().includes(String(tgtParam).toLowerCase())) || { id: tgtParam, name: String(tgtParam) });
 
   pingSourceNode = srcNode;
   pingTargetNode = tgtNode;
 
   const srcName = srcNode.name;
   const tgtName = tgtNode.name;
-  const srcIp = srcNode.ip || '192.168.20.10';
-  const tgtIp = tgtNode.ip || '192.168.10.10';
 
   const srcOffline = isNodeOffline(srcNode.id);
   const tgtOffline = isNodeOffline(tgtNode.id);
@@ -496,7 +494,7 @@ function executeRouterPing(srcParam, tgtParam, forceFail = false) {
       <span style="color:#ef4444;">Request timed out.</span><br>
       <span style="color:#ef4444;">Request timed out.</span><br>
       <span style="color:#ef4444;">Request timed out.</span><br><br>
-      Ping statistics for ${tgtIp}:<br>
+      Ping statistics for ${tgtName}:<br>
       &nbsp;&nbsp;&nbsp;&nbsp;Packets: Sent = 4, Received = 0, Lost = 4 (100% loss)<br>
     `;
 
@@ -509,7 +507,7 @@ function executeRouterPing(srcParam, tgtParam, forceFail = false) {
         <span style="color:#ef4444;">%LINK-5-CHANGED: Interface FastEthernet0/1, changed state to administratively down</span><br>
         <span style="color:#ef4444;">%LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet0/1, changed state to down</span><br><br>
         Hardware Error: Network interface is administratively down (Power OFF).<br>
-        Ping statistics for ${tgtIp}:<br>
+        Ping statistics for ${tgtName}:<br>
         &nbsp;&nbsp;&nbsp;&nbsp;Packets: Sent = 0, Received = 0, Lost = 0 (Transmit aborted)<br>
       `;
     } else if (tgtOffline) {
@@ -518,11 +516,11 @@ function executeRouterPing(srcParam, tgtParam, forceFail = false) {
       const bName = bBooth ? bBooth.name : 'Booth';
       failReason = `Destination Terminal (${tgtName}) is POWERED OFF / UNREACHABLE (${bName})`;
       ciscoMsg = `
-        <span style="color:#ef4444;">Reply from 192.168.1.1: Destination host unreachable.</span><br>
-        <span style="color:#ef4444;">Reply from 192.168.1.1: Destination host unreachable.</span><br>
-        <span style="color:#ef4444;">Reply from 192.168.1.1: Destination host unreachable.</span><br>
-        <span style="color:#ef4444;">Reply from 192.168.1.1: Destination host unreachable.</span><br><br>
-        Ping statistics for ${tgtIp}:<br>
+        <span style="color:#ef4444;">Reply from Router0: Destination host unreachable.</span><br>
+        <span style="color:#ef4444;">Reply from Router0: Destination host unreachable.</span><br>
+        <span style="color:#ef4444;">Reply from Router0: Destination host unreachable.</span><br>
+        <span style="color:#ef4444;">Reply from Router0: Destination host unreachable.</span><br><br>
+        Ping statistics for ${tgtName}:<br>
         &nbsp;&nbsp;&nbsp;&nbsp;Packets: Sent = 4, Received = 0, Lost = 4 (100% loss)<br>
       `;
     }
@@ -532,11 +530,11 @@ function executeRouterPing(srcParam, tgtParam, forceFail = false) {
     updateDetailBox(`
       <div style="background:#0f172a; padding:12px; border-radius:8px; border:1px solid #ef4444; font-family:monospace;">
         <div style="color:#ef4444; font-weight:bold; font-size:0.9rem; margin-bottom:8px;">
-          ❌ CISCO IOS COMMAND PROMPT [${srcName} - ${srcIp}]:
+          ❌ CISCO IOS COMMAND PROMPT [${srcName}]:
         </div>
         <div style="color:#94a3b8; font-size:0.8rem;">
-          > ping ${tgtIp}<br><br>
-          Pinging ${tgtIp} with 32 bytes of data:<br>
+          > ping ${tgtName}<br><br>
+          Pinging ${tgtName} with 32 bytes of data:<br>
           ${ciscoMsg}
         </div>
         <div style="margin-top:10px; padding:6px 10px; background:rgba(239,68,68,0.2); border-radius:4px; color:#ef4444; font-weight:bold; font-size:0.85rem;">
@@ -576,22 +574,22 @@ function executeRouterPing(srcParam, tgtParam, forceFail = false) {
   updateDetailBox(`
     <div style="background:#0f172a; padding:12px; border-radius:8px; border:1px solid #10b981; font-family:monospace;">
       <div style="color:#60a5fa; font-weight:bold; font-size:0.9rem; margin-bottom:8px;">
-        💻 CISCO IOS COMMAND PROMPT [${srcName} - ${srcIp}]:
+        💻 CISCO IOS COMMAND PROMPT [${srcName}]:
       </div>
       <div style="color:#d1d5db; font-size:0.8rem;">
-        > ping ${tgtIp}<br><br>
-        Pinging ${tgtIp} with 32 bytes of data:<br>
-        <span style="color:#10b981;">Reply from ${tgtIp}: bytes=32 time=2ms TTL=128</span><br>
-        <span style="color:#10b981;">Reply from ${tgtIp}: bytes=32 time=1ms TTL=128</span><br>
-        <span style="color:#10b981;">Reply from ${tgtIp}: bytes=32 time=3ms TTL=128</span><br>
-        <span style="color:#10b981;">Reply from ${tgtIp}: bytes=32 time=2ms TTL=128</span><br><br>
-        Ping statistics for ${tgtIp}:<br>
+        > ping ${tgtName}<br><br>
+        Pinging ${tgtName} with 32 bytes of data:<br>
+        <span style="color:#10b981;">Reply from ${tgtName}: bytes=32 time=2ms TTL=128</span><br>
+        <span style="color:#10b981;">Reply from ${tgtName}: bytes=32 time=1ms TTL=128</span><br>
+        <span style="color:#10b981;">Reply from ${tgtName}: bytes=32 time=3ms TTL=128</span><br>
+        <span style="color:#10b981;">Reply from ${tgtName}: bytes=32 time=2ms TTL=128</span><br><br>
+        Ping statistics for ${tgtName}:<br>
         &nbsp;&nbsp;&nbsp;&nbsp;Packets: Sent = 4, Received = 4, Lost = 0 (0% loss),<br>
         Approximate round trip times in milli-seconds:<br>
         &nbsp;&nbsp;&nbsp;&nbsp;Minimum = 1ms, Maximum = 3ms, Average = 2ms<br>
       </div>
       <div style="margin-top:10px; padding:6px 10px; background:rgba(16,185,129,0.2); border-radius:4px; color:#10b981; font-weight:bold; font-size:0.85rem;">
-        CISCO SIMULATION RESULT: SUCCESSFUL ✅ (Routed via Router0 Gateway 192.168.1.1)
+        CISCO SIMULATION RESULT: SUCCESSFUL ✅ (Routed via Router0 Gateway)
       </div>
     </div>
   `);
@@ -738,10 +736,6 @@ function drawTopology() {
     ctx.font = 'bold 11px sans-serif';
     ctx.fillStyle = isOffline ? '#94a3b8' : (isSource ? '#60a5fa' : (isTarget ? '#34d399' : '#e2e8f0'));
     ctx.fillText(isOffline ? `${node.name} [OFF]` : node.name, node.x, node.y + 32);
-
-    ctx.font = '9px monospace';
-    ctx.fillStyle = isOffline ? '#ef4444' : '#94a3b8';
-    ctx.fillText(isOffline ? 'DOWN (0.0.0.0)' : node.ip, node.x, node.y + 44);
   });
 
   // Animated Packets
@@ -870,16 +864,14 @@ function openCiscoInspector(node) {
     bodyEl.innerHTML = `
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1rem; font-size: 0.85rem;">
         <div><strong>Device ID:</strong> <code>${node.id}</code></div>
-        <div><strong>IP Address:</strong> <code style="color:#60a5fa;">${node.ip}</code></div>
-        <div><strong>Subnet Mask:</strong> <code>${node.mask || '255.255.255.0'}</code></div>
-        <div><strong>MAC Address:</strong> <code>${node.mac || '0000.0000.0000'}</code></div>
         <div><strong>Device Type:</strong> <span class="badge badge-info">${node.type}</span></div>
+        <div><strong>MAC Address:</strong> <code>${node.mac || '0000.0000.0000'}</code></div>
         <div><strong>Interface State:</strong> ${isOff ? '<span class="badge badge-danger">● Administratively Down</span>' : '<span class="badge badge-success">● Connected / Up</span>'}</div>
       </div>
       ${bInfo ? `
         <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem;">
           <div style="font-weight: bold; margin-bottom: 4px; color:${bInfo.online ? '#10b981' : '#ef4444'};">
-            ${bInfo.name} - VLAN ${bInfo.vlan} (${bInfo.subnet})
+            ${bInfo.name} - VLAN ${bInfo.vlan}
           </div>
           <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.8rem;">
             Power State: <strong>${bInfo.online ? '🟢 ONLINE (Interface UP)' : '🔴 OFFLINE (Port Shutdown)'}</strong>

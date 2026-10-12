@@ -16,7 +16,7 @@
       <div class="brand-icon">🗳️</div>
       <div class="brand-title">
         <h1>NETWORK BASED SECURE ELECTRONIC VOTING SYSTEM</h1>
-        <p>CENTRALIZED MONITORING & PACKET TRACER ARCHITECTURE | IP: 192.168.10.10</p>
+        <p>CENTRALIZED MONITORING & CISCO PACKET TRACER ARCHITECTURE</p>
       </div>
     </div>
 
@@ -51,7 +51,7 @@
           <div class="stat-icon">💻</div>
           <div class="stat-details">
             <h3 id="currentTerminalText">Booth 1 (PC0)</h3>
-            <p>Terminal IP: 192.168.20.10</p>
+            <p>Secure Polling Station Terminal</p>
           </div>
         </div>
         <div class="stat-card" style="--stat-color: #10b981;">
@@ -81,9 +81,9 @@
             <div class="form-group" style="margin-bottom: 1rem;">
               <label for="boothSelect">Select Polling Station Subnet</label>
               <select id="boothSelect" class="form-select" onchange="updateTerminalInfo()">
-                <option value="Zone 1 (Red)|192.168.20.10">Booth 1 - Red Zone (Subnet 192.168.20.0/24)</option>
-                <option value="Zone 2 (Green)|192.168.30.10">Booth 2 - Green Zone (Subnet 192.168.30.0/24)</option>
-                <option value="Zone 3 (Pink)|192.168.40.10">Booth 3 - Pink Zone (Subnet 192.168.40.0/24)</option>
+                <option value="Zone 1 (Red)|PC0">Booth 1 - Red Zone</option>
+                <option value="Zone 2 (Green)|PC2">Booth 2 - Green Zone</option>
+                <option value="Zone 3 (Pink)|PC4">Booth 3 - Pink Zone</option>
               </select>
             </div>
 
@@ -204,7 +204,7 @@
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
         <div class="card">
           <div class="card-header">
-            <h2 class="card-title">🖥️ Server Farm & Network Node Status</h2>
+            <h2 class="card-title">🖥️ Network Node & Station Status</h2>
             <span class="badge badge-success">Ping Monitoring Active</span>
           </div>
           <div class="table-responsive" style="max-height: 320px;">
@@ -212,7 +212,6 @@
               <thead>
                 <tr>
                   <th>Node Name</th>
-                  <th>IP Address</th>
                   <th>Zone</th>
                   <th>Latency</th>
                   <th>Status</th>
@@ -251,21 +250,21 @@
           <div style="display: flex; gap: 0.6rem; align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 10px; border: 1px solid var(--border-color); flex-wrap: wrap;">
             <span style="font-size: 0.78rem; color: #60a5fa; font-weight: bold;">📡 Send ICMP Packet:</span>
             <select id="packetSourceSelect" class="form-select" style="padding: 0.3rem 0.6rem; font-size: 0.78rem; width: 140px;">
-              <option value="pc0">PC0 (Booth 1)</option>
-              <option value="pc1">PC1 (Booth 1)</option>
-              <option value="pc2">PC2 (Booth 2)</option>
-              <option value="pc4">PC4 (Booth 3)</option>
-              <option value="pc8">PC8 (Admin PC)</option>
-              <option value="db_server">Server0 (DB Server)</option>
+              <option value="pc0">PC0</option>
+              <option value="pc1">PC1</option>
+              <option value="pc2">PC2</option>
+              <option value="pc4">PC4</option>
+              <option value="pc8">PC8</option>
+              <option value="db_server">Server0</option>
             </select>
             <span style="font-size: 0.78rem; color: var(--text-muted);">➔</span>
             <select id="packetTargetSelect" class="form-select" style="padding: 0.3rem 0.6rem; font-size: 0.78rem; width: 160px;">
-              <option value="sec_server">Server4 (Security CA)</option>
-              <option value="web_server">WEB Server (.10.10)</option>
-              <option value="db_server">Server0 DB (.10.12)</option>
-              <option value="audit_server">Server3 Audit (.10.13)</option>
-              <option value="router0">Router0 Gateway (.1.1)</option>
-              <option value="192.168.99.250">Offline IP (192.168.99.250)</option>
+              <option value="sec_server">Server4</option>
+              <option value="web_server">Server1</option>
+              <option value="db_server">Server0</option>
+              <option value="audit_server">Server3</option>
+              <option value="router0">Router0</option>
+              <option value="offline_target">Offline Node</option>
             </select>
             <button class="btn-primary" style="padding: 0.35rem 0.8rem; font-size: 0.78rem; width: auto;" onclick="sendCustomPacket()">
               🚀 Fire PDU Ping
@@ -463,7 +462,7 @@
                   <td>🔥</td>
                   <td><span style="color:#ef4444; font-weight:bold;">Failed</span></td>
                   <td>PC0</td>
-                  <td>192.168.99.250</td>
+                  <td>Offline Node</td>
                   <td>ICMP</td>
                   <td><span style="display:inline-block; width:12px; height:12px; background:#ef4444; border-radius:2px;"></span></td>
                   <td>0.000</td>
@@ -560,7 +559,7 @@
               <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid rgba(239,68,68,0.3);">
                 <div>
                   <div style="font-weight: bold; color: #ef4444; font-size: 0.85rem;">Booth 1 - Red Zone (VLAN 20)</div>
-                  <div style="font-size: 0.72rem; color: var(--text-muted);">Switch 1 | 192.168.20.0/24 | PC0, PC1</div>
+                  <div style="font-size: 0.72rem; color: var(--text-muted);">Switch 1 | Terminals PC0, PC1</div>
                 </div>
                 <button class="btn-primary" id="adminBoothBtn1" style="padding: 0.3rem 0.7rem; font-size: 0.78rem; width: auto; background: #ef4444;" onclick="toggleBoothPower('booth1')">
                   🔴 Turn OFF
@@ -569,7 +568,7 @@
               <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid rgba(16,185,129,0.3);">
                 <div>
                   <div style="font-weight: bold; color: #10b981; font-size: 0.85rem;">Booth 2 - Green Zone (VLAN 30)</div>
-                  <div style="font-size: 0.72rem; color: var(--text-muted);">Switch 2 | 192.168.30.0/24 | PC2, PC3</div>
+                  <div style="font-size: 0.72rem; color: var(--text-muted);">Switch 2 | Terminals PC2, PC3</div>
                 </div>
                 <button class="btn-primary" id="adminBoothBtn2" style="padding: 0.3rem 0.7rem; font-size: 0.78rem; width: auto; background: #ef4444;" onclick="toggleBoothPower('booth2')">
                   🔴 Turn OFF
@@ -578,7 +577,7 @@
               <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid rgba(236,72,153,0.3);">
                 <div>
                   <div style="font-weight: bold; color: #ec4899; font-size: 0.85rem;">Booth 3 - Pink Zone (VLAN 40)</div>
-                  <div style="font-size: 0.72rem; color: var(--text-muted);">Switch 3 | 192.168.40.0/24 | PC4, PC5</div>
+                  <div style="font-size: 0.72rem; color: var(--text-muted);">Switch 3 | Terminals PC4, PC5</div>
                 </div>
                 <button class="btn-primary" id="adminBoothBtn3" style="padding: 0.3rem 0.7rem; font-size: 0.78rem; width: auto; background: #ef4444;" onclick="toggleBoothPower('booth3')">
                   🔴 Turn OFF

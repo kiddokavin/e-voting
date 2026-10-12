@@ -254,9 +254,9 @@ function showReceiptModal(receipt) {
     <div class="receipt-row"><span>Voter ID:</span><strong>${receipt.voterId}</strong></div>
     <div class="receipt-row"><span>Candidate Voted:</span><strong>${receipt.candidateName}</strong></div>
     <div class="receipt-row"><span>Party:</span><strong>${receipt.party}</strong></div>
-    <div class="receipt-row"><span>Polling Subnet:</span><strong>${receipt.boothZone} (${receipt.sourceIp})</strong></div>
+    <div class="receipt-row"><span>Polling Subnet:</span><strong>${receipt.boothZone}</strong></div>
     <div class="receipt-row"><span>Timestamp:</span><strong>${new Date(receipt.timestamp).toLocaleString()}</strong></div>
-    <div class="receipt-row"><span>Server Farm Target:</span><strong>WEB Server (192.168.10.10)</strong></div>
+    <div class="receipt-row"><span>Server Farm Target:</span><strong>Server0 (Central Election Cluster)</strong></div>
     <div style="margin-top: 0.8rem;">
       <span style="font-size:0.75rem; color:var(--text-muted);">SHA-256 Immutable Cryptographic Hash:</span>
       <div class="receipt-hash">${receipt.hash}</div>
