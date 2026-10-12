@@ -59,7 +59,6 @@ const topoLinks = [
   // Booth 1 Links
   { from: 'switch1', to: 'pc0' },
   { from: 'switch1', to: 'pc1' },
-  { from: 'switch1', to: 'switch2' },
 
   // Booth 2 Links
   { from: 'switch2', to: 'pc2' },
@@ -358,7 +357,7 @@ function handleNodeClick(node) {
 
     updateDetailBox(`
       <div style="color: #60a5fa; font-weight: bold;">
-        📍 Source Selected: ${node.name} (${node.ip})
+        📍 Source Selected: ${node.name}
       </div>
       <div style="color: #f59e0b; margin-top: 0.2rem;">
         👉 Now click 2nd Target Node to Ping instantly...
@@ -660,9 +659,6 @@ function drawTopology() {
     if (isLinkDown) {
       ctx.strokeStyle = 'rgba(239, 68, 68, 0.45)';
       ctx.setLineDash([4, 4]);
-    } else if (link.from === 'switch1' && link.to === 'switch2') {
-      ctx.setLineDash([4, 4]);
-      ctx.strokeStyle = '#f59e0b';
     } else {
       ctx.strokeStyle = '#374151';
       ctx.setLineDash([]);
