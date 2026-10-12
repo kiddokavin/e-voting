@@ -87,12 +87,22 @@
               </select>
             </div>
 
+            <!-- Offline Booth Warning Banner -->
+            <div id="boothOfflineWarning" style="display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #ef4444; padding: 0.75rem 0.9rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.82rem;">
+              <div style="font-weight: bold; display: flex; align-items: center; gap: 0.4rem;">
+                <span>⚠️</span> <span>Selected Polling Booth is currently POWERED OFF!</span>
+              </div>
+              <div style="color: #fca5a5; font-size: 0.76rem; margin-top: 4px;">
+                Cisco interface GigabitEthernet is administratively shut down. Authentication & voting are disabled until interface is turned ON.
+              </div>
+            </div>
+
             <div class="form-group" style="margin-bottom: 1rem;">
               <label for="voterIdInput">Enter Voter ID Number (3 Letters + 7 Digits)</label>
               <input type="text" id="voterIdInput" class="form-input" placeholder="e.g. VOT1000001" value="VOT1000001" maxlength="10" style="text-transform: uppercase;">
             </div>
 
-            <button class="btn-primary" onclick="verifyVoter()">
+            <button class="btn-primary" id="verifyVoterBtn" onclick="verifyVoter()">
               <span>🔍</span> Verify Voter Eligibility
             </button>
 
@@ -260,6 +270,46 @@
             <button class="btn-primary" style="padding: 0.35rem 0.8rem; font-size: 0.78rem; width: auto;" onclick="sendCustomPacket()">
               🚀 Fire PDU Ping
             </button>
+          </div>
+        </div>
+
+        <!-- Interactive Polling Booth Power Switches (Turn OFF / ON individual booths) -->
+        <div style="margin: 0.8rem 1rem 0.6rem 1rem; background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem;">
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <span style="font-size: 1.25rem;">⚡</span>
+            <div>
+              <div style="font-size: 0.88rem; font-weight: bold; color: #f3f4f6;">Polling Booth Subnet Interface Power Control</div>
+              <div style="font-size: 0.73rem; color: var(--text-muted);">Cisco Port Shutdown (Toggle individual polling booth power ON / OFF)</div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+            <!-- Booth 1 Toggle -->
+            <div id="boothCard1" style="display: flex; align-items: center; gap: 0.6rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.4); padding: 0.35rem 0.75rem; border-radius: 8px;">
+              <span id="boothDot1" style="display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></span>
+              <span style="font-size: 0.8rem; font-weight: bold; color: #ef4444;">Booth 1 (VLAN 20)</span>
+              <button id="boothBtn1" onclick="toggleBoothPower('booth1')" style="padding: 0.22rem 0.6rem; font-size: 0.72rem; border-radius: 6px; cursor: pointer; font-weight: bold; background: #ef4444; color: #fff; border: none; transition: all 0.2s;">
+                🔴 Turn OFF
+              </button>
+            </div>
+
+            <!-- Booth 2 Toggle -->
+            <div id="boothCard2" style="display: flex; align-items: center; gap: 0.6rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.4); padding: 0.35rem 0.75rem; border-radius: 8px;">
+              <span id="boothDot2" style="display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></span>
+              <span style="font-size: 0.8rem; font-weight: bold; color: #10b981;">Booth 2 (VLAN 30)</span>
+              <button id="boothBtn2" onclick="toggleBoothPower('booth2')" style="padding: 0.22rem 0.6rem; font-size: 0.72rem; border-radius: 6px; cursor: pointer; font-weight: bold; background: #ef4444; color: #fff; border: none; transition: all 0.2s;">
+                🔴 Turn OFF
+              </button>
+            </div>
+
+            <!-- Booth 3 Toggle -->
+            <div id="boothCard3" style="display: flex; align-items: center; gap: 0.6rem; background: rgba(236, 72, 153, 0.1); border: 1px solid rgba(236, 72, 153, 0.4); padding: 0.35rem 0.75rem; border-radius: 8px;">
+              <span id="boothDot3" style="display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></span>
+              <span style="font-size: 0.8rem; font-weight: bold; color: #ec4899;">Booth 3 (VLAN 40)</span>
+              <button id="boothBtn3" onclick="toggleBoothPower('booth3')" style="padding: 0.22rem 0.6rem; font-size: 0.72rem; border-radius: 6px; cursor: pointer; font-weight: bold; background: #ef4444; color: #fff; border: none; transition: all 0.2s;">
+                🔴 Turn OFF
+              </button>
+            </div>
           </div>
         </div>
 
@@ -500,6 +550,41 @@
             <button class="btn-primary" onclick="addNewVoter()">
               <span>➕</span> Register Voter
             </button>
+          </div>
+
+          <!-- Polling Booth Subnet Port State & Power Controller -->
+          <div style="background: rgba(255,255,255,0.03); padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+            <h3 style="margin-bottom: 0.5rem; font-size: 1rem;">🔌 Polling Booth Subnet & Power Controller</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Administratively shut down or restore network interfaces for individual voting booths (Cisco VLAN isolation).</p>
+            <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid rgba(239,68,68,0.3);">
+                <div>
+                  <div style="font-weight: bold; color: #ef4444; font-size: 0.85rem;">Booth 1 - Red Zone (VLAN 20)</div>
+                  <div style="font-size: 0.72rem; color: var(--text-muted);">Switch 1 | 192.168.20.0/24 | PC0, PC1</div>
+                </div>
+                <button class="btn-primary" id="adminBoothBtn1" style="padding: 0.3rem 0.7rem; font-size: 0.78rem; width: auto; background: #ef4444;" onclick="toggleBoothPower('booth1')">
+                  🔴 Turn OFF
+                </button>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid rgba(16,185,129,0.3);">
+                <div>
+                  <div style="font-weight: bold; color: #10b981; font-size: 0.85rem;">Booth 2 - Green Zone (VLAN 30)</div>
+                  <div style="font-size: 0.72rem; color: var(--text-muted);">Switch 2 | 192.168.30.0/24 | PC2, PC3</div>
+                </div>
+                <button class="btn-primary" id="adminBoothBtn2" style="padding: 0.3rem 0.7rem; font-size: 0.78rem; width: auto; background: #ef4444;" onclick="toggleBoothPower('booth2')">
+                  🔴 Turn OFF
+                </button>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid rgba(236,72,153,0.3);">
+                <div>
+                  <div style="font-weight: bold; color: #ec4899; font-size: 0.85rem;">Booth 3 - Pink Zone (VLAN 40)</div>
+                  <div style="font-size: 0.72rem; color: var(--text-muted);">Switch 3 | 192.168.40.0/24 | PC4, PC5</div>
+                </div>
+                <button class="btn-primary" id="adminBoothBtn3" style="padding: 0.3rem 0.7rem; font-size: 0.78rem; width: auto; background: #ef4444;" onclick="toggleBoothPower('booth3')">
+                  🔴 Turn OFF
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -48,15 +48,56 @@ function updateTerminalInfo() {
   state.terminalZone = zone;
   state.terminalIp = ip;
 
+  let boothKey = 'booth1';
   let pcName = 'PC0 (Booth 1)';
-  if (zone.includes('Zone 2')) pcName = 'PC2 (Booth 2)';
-  else if (zone.includes('Zone 3')) pcName = 'PC4 (Booth 3)';
+  if (zone.includes('Zone 2')) {
+    boothKey = 'booth2';
+    pcName = 'PC2 (Booth 2)';
+  } else if (zone.includes('Zone 3')) {
+    boothKey = 'booth3';
+    pcName = 'PC4 (Booth 3)';
+  }
+
+  const isOnline = (typeof isBoothOnline === 'function') ? isBoothOnline(boothKey) : true;
+  const warnBanner = document.getElementById('boothOfflineWarning');
+  if (warnBanner) {
+    warnBanner.style.display = isOnline ? 'none' : 'block';
+  }
 
   const termText = document.getElementById('currentTerminalText');
-  if (termText) termText.textContent = `${zone.split(' ')[0]} (${pcName.split(' ')[0]})`;
+  if (termText) {
+    if (isOnline) {
+      termText.innerHTML = `${zone.split(' ')[0]} (${pcName.split(' ')[0]})`;
+      termText.style.color = '#3b82f6';
+    } else {
+      termText.innerHTML = `${zone.split(' ')[0]} <span style="color:#ef4444; font-size:0.8rem;">[OFFLINE / SHUTDOWN]</span>`;
+      termText.style.color = '#ef4444';
+    }
+  }
+
+  const verifyBtn = document.getElementById('verifyVoterBtn');
+  if (verifyBtn) {
+    verifyBtn.disabled = !isOnline;
+    if (!isOnline) {
+      verifyBtn.style.opacity = '0.5';
+      verifyBtn.style.cursor = 'not-allowed';
+    } else {
+      verifyBtn.style.opacity = '1';
+      verifyBtn.style.cursor = 'pointer';
+    }
+  }
 }
 
 async function verifyVoter() {
+  let boothKey = 'booth1';
+  if (state.terminalZone && state.terminalZone.includes('Zone 2')) boothKey = 'booth2';
+  else if (state.terminalZone && state.terminalZone.includes('Zone 3')) boothKey = 'booth3';
+
+  if (typeof isBoothOnline === 'function' && !isBoothOnline(boothKey)) {
+    showAlert(`❌ ACCESS REJECTED: ${state.terminalZone} is currently POWERED OFF! Turn ON booth interface to proceed.`, 'error');
+    return;
+  }
+
   const rawInput = document.getElementById('voterIdInput') ? document.getElementById('voterIdInput').value : '';
   const cleanId = rawInput.trim().toUpperCase();
   if (!cleanId) {
@@ -140,6 +181,15 @@ function selectCandidate(candId) {
 }
 
 async function confirmAndCastVote() {
+  let boothKey = 'booth1';
+  if (state.terminalZone && state.terminalZone.includes('Zone 2')) boothKey = 'booth2';
+  else if (state.terminalZone && state.terminalZone.includes('Zone 3')) boothKey = 'booth3';
+
+  if (typeof isBoothOnline === 'function' && !isBoothOnline(boothKey)) {
+    showAlert(`❌ VOTE REJECTED: ${state.terminalZone} is currently POWERED OFF! Network interface is shut down.`, 'error');
+    return;
+  }
+
   if (!state.selectedVoter) {
     showAlert('Please authenticate voter first!', 'error');
     return;

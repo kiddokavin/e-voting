@@ -81,7 +81,12 @@ const API = {
       { id: 'LOG_1001', timestamp: new Date().toISOString(), type: 'SYSTEM', sourceIp: '192.168.10.13', message: 'Centralized Monitoring Service initialized on Server3.', hash: '0x8f3a9b1029c' },
       { id: 'LOG_1002', timestamp: new Date().toISOString(), type: 'NETWORK', sourceIp: '192.168.1.1', message: 'Core Multilayer Switch 3560-24PS link active on VLANs 10, 20, 30, 40, 50.', hash: '0x4e2c918a00f' }
     ],
-    votesCast: []
+    votesCast: [],
+    boothStatus: {
+      booth1: { id: 'booth1', name: 'Booth 1 (Red Zone)', zone: 'Zone 1 (Red)', vlan: 20, subnet: '192.168.20.0/24', online: true },
+      booth2: { id: 'booth2', name: 'Booth 2 (Green Zone)', zone: 'Zone 2 (Green)', vlan: 30, subnet: '192.168.30.0/24', online: true },
+      booth3: { id: 'booth3', name: 'Booth 3 (Pink Zone)', zone: 'Zone 3 (Pink)', vlan: 40, subnet: '192.168.40.0/24', online: true }
+    }
   },
 
   async init() {
@@ -233,6 +238,15 @@ const API = {
     const cleanVoterId = (voterId || '').trim().toUpperCase();
     const voter = this.mockDB.voters.find(v => v.id === cleanVoterId);
     const candidate = this.mockDB.candidates.find(c => c.id === candidateId);
+
+    let boothKey = 'booth1';
+    const bZone = boothZone || (voter ? voter.booth : '') || '';
+    if (bZone.includes('Zone 2') || bZone.includes('Green')) boothKey = 'booth2';
+    else if (bZone.includes('Zone 3') || bZone.includes('Pink')) boothKey = 'booth3';
+
+    if (this.mockDB.boothStatus && this.mockDB.boothStatus[boothKey] && !this.mockDB.boothStatus[boothKey].online) {
+      return { success: false, message: `ACCESS DENIED: ${bZone} is currently POWERED OFF! Network interface is shut down.` };
+    }
 
     if (!voter || voter.voted) {
       return { success: false, message: 'Double voting attempt blocked!' };

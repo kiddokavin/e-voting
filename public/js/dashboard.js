@@ -103,13 +103,14 @@ function renderNodeTable(nodes) {
   tbody.innerHTML = '';
 
   nodes.forEach(node => {
+    const isOffline = (typeof isNodeOffline === 'function') && isNodeOffline(node.id);
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><strong>${node.name}</strong></td>
-      <td><code style="color:#60a5fa;">${node.ip}</code></td>
-      <td><span class="badge badge-info">${node.zone}</span></td>
-      <td>${node.latency} ms</td>
-      <td><span class="badge badge-success">● ONLINE</span></td>
+      <td><code style="color:${isOffline ? '#ef4444' : '#60a5fa'};">${node.ip}</code></td>
+      <td><span class="badge ${isOffline ? 'badge-danger' : 'badge-info'}">${node.zone}</span></td>
+      <td>${isOffline ? '<span style="color:#ef4444; font-weight:bold;">Timeout (Down)</span>' : node.latency + ' ms'}</td>
+      <td>${isOffline ? '<span class="badge badge-danger">● OFFLINE (SHUTDOWN)</span>' : '<span class="badge badge-success">● ONLINE</span>'}</td>
     `;
     tbody.appendChild(tr);
   });

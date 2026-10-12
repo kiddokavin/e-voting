@@ -131,7 +131,12 @@ let db = {
       hash: crypto.createHash('sha256').update('LOG_1002_VLAN').digest('hex')
     }
   ],
-  votesCast: []
+  votesCast: [],
+  boothStatus: {
+    booth1: { id: 'booth1', name: 'Booth 1 (Red Zone)', zone: 'Zone 1 (Red)', vlan: 20, subnet: '192.168.20.0/24', online: true },
+    booth2: { id: 'booth2', name: 'Booth 2 (Green Zone)', zone: 'Zone 2 (Green)', vlan: 30, subnet: '192.168.30.0/24', online: true },
+    booth3: { id: 'booth3', name: 'Booth 3 (Pink Zone)', zone: 'Zone 3 (Pink)', vlan: 40, subnet: '192.168.40.0/24', online: true }
+  }
 };
 
 // Load saved data if exists
@@ -277,13 +282,20 @@ app.post('/api/vote/cast', (req, res) => {
   let sourceSwitch = 'switch1';
   let boothName = boothZone || voter.booth || 'Zone 1 (Red)';
   let sourceIp = terminalIp || '192.168.20.10';
+  let boothKey = 'booth1';
 
   if (boothName.includes('Zone 2') || boothName.includes('Green')) {
     sourceSwitch = 'switch2';
     sourceIp = terminalIp || '192.168.30.10';
+    boothKey = 'booth2';
   } else if (boothName.includes('Zone 3') || boothName.includes('Pink')) {
     sourceSwitch = 'switch3';
     sourceIp = terminalIp || '192.168.40.10';
+    boothKey = 'booth3';
+  }
+
+  if (db.boothStatus && db.boothStatus[boothKey] && !db.boothStatus[boothKey].online) {
+    return res.status(403).json({ success: false, message: `ACCESS DENIED: ${boothName} is currently POWERED OFF! Interface is down.` });
   }
 
   const packetRoute = [
@@ -396,6 +408,43 @@ app.get('/api/monitoring/nodes', (req, res) => {
 // 6. Audit Logs API
 app.get('/api/audit/logs', (req, res) => {
   res.json({ logs: db.auditLogs });
+});
+
+// 6b. Booth Power State API
+app.get('/api/booths', (req, res) => {
+  res.json({ success: true, boothStatus: db.boothStatus });
+});
+
+app.post('/api/booth/toggle', (req, res) => {
+  const { boothId } = req.body;
+  if (!db.boothStatus || !db.boothStatus[boothId]) {
+    return res.status(400).json({ success: false, message: 'Invalid Booth ID' });
+  }
+
+  db.boothStatus[boothId].online = !db.boothStatus[boothId].online;
+  const isOnline = db.boothStatus[boothId].online;
+  const bInfo = db.boothStatus[boothId];
+
+  // Update node statuses in db
+  const boothNodes = boothId === 'booth1' ? ['switch1', 'pc0', 'pc1'] : (boothId === 'booth2' ? ['switch2', 'pc2', 'pc3'] : ['switch3', 'pc4', 'pc5']);
+  db.nodes.forEach(n => {
+    if (boothNodes.includes(n.id)) {
+      n.status = isOnline ? 'ONLINE' : 'OFFLINE';
+    }
+  });
+
+  const msg = `CISCO_IOS: Interface VLAN ${bInfo.vlan} (${bInfo.subnet}) set to ${isOnline ? 'POWER ON (no shutdown)' : 'POWER OFF (shutdown)'}.`;
+  db.auditLogs.unshift({
+    id: `LOG_${Date.now()}`,
+    timestamp: new Date().toISOString(),
+    type: isOnline ? 'NETWORK' : 'SECURITY_ALERT',
+    sourceIp: '192.168.1.1',
+    message: msg,
+    hash: crypto.createHash('sha256').update(`${msg}_${Date.now()}`).digest('hex')
+  });
+
+  saveDB();
+  res.json({ success: true, booth: db.boothStatus[boothId], boothStatus: db.boothStatus });
 });
 
 // 7. Admin Election Control

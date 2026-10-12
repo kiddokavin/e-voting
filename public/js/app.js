@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadSampleVoters();
   initDashboardCharts();
   initTopologyCanvas();
+  if (typeof updateBoothPowerUI === 'function') updateBoothPowerUI();
+  if (typeof updateTerminalInfo === 'function') updateTerminalInfo();
 
   // Auto-refresh monitoring stats every 3 seconds
   setInterval(() => {

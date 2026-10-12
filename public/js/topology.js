@@ -75,6 +75,148 @@ const topoLinks = [
   { from: 'switch4', to: 'pc8' }
 ];
 
+// Polling Booth Subnet Power Management State (Booth 1, 2, 3)
+const defaultBoothStatus = {
+  booth1: { id: 'booth1', name: 'Booth 1 (Red Zone)', zone: 'Zone 1 (Red)', vlan: 20, subnet: '192.168.20.0/24', online: true, nodes: ['switch1', 'pc0', 'pc1'] },
+  booth2: { id: 'booth2', name: 'Booth 2 (Green Zone)', zone: 'Zone 2 (Green)', vlan: 30, subnet: '192.168.30.0/24', online: true, nodes: ['switch2', 'pc2', 'pc3'] },
+  booth3: { id: 'booth3', name: 'Booth 3 (Pink Zone)', zone: 'Zone 3 (Pink)', vlan: 40, subnet: '192.168.40.0/24', online: true, nodes: ['switch3', 'pc4', 'pc5'] }
+};
+
+let boothStatus = Object.assign({}, defaultBoothStatus);
+try {
+  const saved = localStorage.getItem('evoting_booth_status');
+  if (saved) boothStatus = Object.assign({}, defaultBoothStatus, JSON.parse(saved));
+} catch (e) {}
+
+window.boothStatus = boothStatus;
+
+function getNodeBooth(nodeId) {
+  if (!nodeId) return null;
+  const nid = String(nodeId).toLowerCase();
+  if (['switch1', 'pc0', 'pc1'].includes(nid)) return 'booth1';
+  if (['switch2', 'pc2', 'pc3'].includes(nid)) return 'booth2';
+  if (['switch3', 'pc4', 'pc5'].includes(nid)) return 'booth3';
+  return null;
+}
+
+function isNodeOffline(nodeId) {
+  const b = getNodeBooth(nodeId);
+  if (b && boothStatus[b]) {
+    return !boothStatus[b].online;
+  }
+  return false;
+}
+
+function isBoothOnline(boothId) {
+  return boothStatus[boothId] ? boothStatus[boothId].online : true;
+}
+
+window.getNodeBooth = getNodeBooth;
+window.isNodeOffline = isNodeOffline;
+window.isBoothOnline = isBoothOnline;
+
+function toggleBoothPower(boothId) {
+  if (!boothStatus[boothId]) return;
+  const current = boothStatus[boothId].online;
+  const newStatus = !current;
+  boothStatus[boothId].online = newStatus;
+
+  try {
+    localStorage.setItem('evoting_booth_status', JSON.stringify(boothStatus));
+  } catch (e) {}
+
+  const boothInfo = boothStatus[boothId];
+  const actionText = newStatus ? 'POWER ON (no shutdown)' : 'POWER OFF (shutdown)';
+  const msg = `CISCO_IOS: Interface VLAN ${boothInfo.vlan} (${boothInfo.subnet}) administratively set to ${actionText}.`;
+
+  if (window.API && API.mockDB && API.mockDB.auditLogs) {
+    API.mockDB.auditLogs.unshift({
+      id: `LOG_${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      type: newStatus ? 'NETWORK' : 'SECURITY_ALERT',
+      sourceIp: '192.168.1.1',
+      message: msg,
+      hash: '0x' + Math.random().toString(16).substring(2, 10)
+    });
+  }
+
+  updateBoothPowerUI();
+
+  updateDetailBox(`
+    <div style="background:#0f172a; padding:12px; border-radius:8px; border:1px solid ${newStatus ? '#10b981' : '#ef4444'}; font-family:monospace;">
+      <div style="color:${newStatus ? '#10b981' : '#ef4444'}; font-weight:bold; font-size:0.9rem; margin-bottom:6px;">
+        ⚙️ CISCO IOS INTERFACE STATE CHANGE:
+      </div>
+      <div style="color:#e2e8f0; font-size:0.8rem;">
+        Router0# configure terminal<br>
+        Router0(config)# interface GigabitEthernet0/0.${boothInfo.vlan}<br>
+        Router0(config-subif)# ${newStatus ? 'no shutdown' : 'shutdown'}<br>
+        <span style="color:${newStatus ? '#10b981' : '#ef4444'};">
+          %LINK-5-CHANGED: Interface GigabitEthernet0/0.${boothInfo.vlan}, changed state to ${newStatus ? 'up' : 'administratively down'}<br>
+          %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.${boothInfo.vlan}, changed state to ${newStatus ? 'up' : 'down'}
+        </span>
+      </div>
+    </div>
+  `);
+
+  if (typeof showAlert === 'function') {
+    if (newStatus) {
+      showAlert(`🟢 ${boothInfo.name} Powered ON! Interface GigabitEthernet0/0.${boothInfo.vlan} is UP.`, 'success');
+    } else {
+      showAlert(`🔴 ${boothInfo.name} Powered OFF! Subnet ${boothInfo.subnet} is administratively DOWN.`, 'error');
+    }
+  }
+
+  if (typeof drawTopology === 'function') drawTopology();
+  if (typeof fetchMonitoringStats === 'function') fetchMonitoringStats();
+  if (typeof updateTerminalInfo === 'function') updateTerminalInfo();
+}
+window.toggleBoothPower = toggleBoothPower;
+
+function updateBoothPowerUI() {
+  ['booth1', 'booth2', 'booth3'].forEach((id, idx) => {
+    const num = idx + 1;
+    const isOnline = boothStatus[id].online;
+
+    // Topology tab buttons
+    const btn = document.getElementById(`boothBtn${num}`);
+    const dot = document.getElementById(`boothDot${num}`);
+    const card = document.getElementById(`boothCard${num}`);
+    if (btn) {
+      btn.textContent = isOnline ? '🔴 Turn OFF' : '🟢 Turn ON';
+      btn.style.background = isOnline ? '#ef4444' : '#10b981';
+    }
+    if (dot) {
+      dot.style.background = isOnline ? '#10b981' : '#ef4444';
+      dot.style.boxShadow = isOnline ? '0 0 8px #10b981' : '0 0 8px #ef4444';
+    }
+    if (card) {
+      card.style.opacity = isOnline ? '1' : '0.65';
+    }
+
+    // Admin tab buttons
+    const adminBtn = document.getElementById(`adminBoothBtn${num}`);
+    if (adminBtn) {
+      adminBtn.textContent = isOnline ? '🔴 Turn OFF' : '🟢 Turn ON';
+      adminBtn.style.background = isOnline ? '#ef4444' : '#10b981';
+    }
+  });
+
+  // Update Voter Terminal dropdown labels
+  const select = document.getElementById('boothSelect');
+  if (select && select.options.length >= 3) {
+    select.options[0].text = boothStatus.booth1.online ? 'Booth 1 - Red Zone (Subnet 192.168.20.0/24)' : 'Booth 1 - Red Zone [🔴 OFFLINE / POWERED OFF]';
+    select.options[1].text = boothStatus.booth2.online ? 'Booth 2 - Green Zone (Subnet 192.168.30.0/24)' : 'Booth 2 - Green Zone [🔴 OFFLINE / POWERED OFF]';
+    select.options[2].text = boothStatus.booth3.online ? 'Booth 3 - Pink Zone (Subnet 192.168.40.0/24)' : 'Booth 3 - Pink Zone [🔴 OFFLINE / POWERED OFF]';
+  }
+
+  // Update Warning banner in Voter Terminal
+  if (typeof updateTerminalInfo === 'function') {
+    updateTerminalInfo();
+  }
+}
+window.updateBoothPowerUI = updateBoothPowerUI;
+
 function resizeCanvas() {
   if (!canvas) return;
   const parent = canvas.parentElement;
@@ -301,7 +443,16 @@ function sendCustomPacket() {
 }
 
 function triggerTestPingSuccess() {
-  const route = dynamicCiscoPingRoutes[pingRouteIndex % dynamicCiscoPingRoutes.length];
+  let onlineRoutes = dynamicCiscoPingRoutes.filter(r => !isNodeOffline(r.src) && !isNodeOffline(r.tgt));
+  if (onlineRoutes.length === 0) {
+    if (typeof showAlert === 'function') showAlert('⚠️ All polling booths are currently POWERED OFF! Power ON a booth to test ping.', 'warning');
+    onlineRoutes = [
+      { src: 'sec_server', tgt: 'web_server', fail: false },
+      { src: 'web_server', tgt: 'db_server', fail: false }
+    ];
+  }
+
+  const route = onlineRoutes[pingRouteIndex % onlineRoutes.length];
   pingRouteIndex++;
 
   const srcNode = topoNodes.find(n => n.id === route.src);
@@ -334,8 +485,48 @@ function executeRouterPing(srcParam, tgtParam, forceFail = false) {
   const srcIp = srcNode.ip || '192.168.20.10';
   const tgtIp = tgtNode.ip || '192.168.10.10';
 
-  if (forceFail) {
-    const failPath = [srcNode.id, getSubnetSwitch(srcNode.id), 'mswitch0', 'router0'];
+  const srcOffline = isNodeOffline(srcNode.id);
+  const tgtOffline = isNodeOffline(tgtNode.id);
+
+  if (forceFail || srcOffline || tgtOffline) {
+    let failPath = [srcNode.id];
+    let failReason = 'Request Timed Out / Host Unreachable';
+    let ciscoMsg = `
+      <span style="color:#ef4444;">Request timed out.</span><br>
+      <span style="color:#ef4444;">Request timed out.</span><br>
+      <span style="color:#ef4444;">Request timed out.</span><br>
+      <span style="color:#ef4444;">Request timed out.</span><br><br>
+      Ping statistics for ${tgtIp}:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;Packets: Sent = 4, Received = 0, Lost = 4 (100% loss)<br>
+    `;
+
+    if (srcOffline) {
+      failPath = [srcNode.id];
+      const bBooth = boothStatus[getNodeBooth(srcNode.id)];
+      const bName = bBooth ? bBooth.name : 'Booth';
+      failReason = `Source Terminal (${srcName}) is POWERED OFF / SHUTDOWN (${bName})`;
+      ciscoMsg = `
+        <span style="color:#ef4444;">%LINK-5-CHANGED: Interface FastEthernet0/1, changed state to administratively down</span><br>
+        <span style="color:#ef4444;">%LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet0/1, changed state to down</span><br><br>
+        Hardware Error: Network interface is administratively down (Power OFF).<br>
+        Ping statistics for ${tgtIp}:<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;Packets: Sent = 0, Received = 0, Lost = 0 (Transmit aborted)<br>
+      `;
+    } else if (tgtOffline) {
+      failPath = [srcNode.id, getSubnetSwitch(srcNode.id), 'mswitch0', 'router0'];
+      const bBooth = boothStatus[getNodeBooth(tgtNode.id)];
+      const bName = bBooth ? bBooth.name : 'Booth';
+      failReason = `Destination Terminal (${tgtName}) is POWERED OFF / UNREACHABLE (${bName})`;
+      ciscoMsg = `
+        <span style="color:#ef4444;">Reply from 192.168.1.1: Destination host unreachable.</span><br>
+        <span style="color:#ef4444;">Reply from 192.168.1.1: Destination host unreachable.</span><br>
+        <span style="color:#ef4444;">Reply from 192.168.1.1: Destination host unreachable.</span><br>
+        <span style="color:#ef4444;">Reply from 192.168.1.1: Destination host unreachable.</span><br><br>
+        Ping statistics for ${tgtIp}:<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;Packets: Sent = 4, Received = 0, Lost = 4 (100% loss)<br>
+      `;
+    }
+
     animatePacketRoute(failPath, '#ef4444', 0.35, 20);
 
     updateDetailBox(`
@@ -346,21 +537,16 @@ function executeRouterPing(srcParam, tgtParam, forceFail = false) {
         <div style="color:#94a3b8; font-size:0.8rem;">
           > ping ${tgtIp}<br><br>
           Pinging ${tgtIp} with 32 bytes of data:<br>
-          <span style="color:#ef4444;">Request timed out.</span><br>
-          <span style="color:#ef4444;">Request timed out.</span><br>
-          <span style="color:#ef4444;">Request timed out.</span><br>
-          <span style="color:#ef4444;">Request timed out.</span><br><br>
-          Ping statistics for ${tgtIp}:<br>
-          &nbsp;&nbsp;&nbsp;&nbsp;Packets: Sent = 4, Received = 0, Lost = 4 (100% loss)<br>
+          ${ciscoMsg}
         </div>
         <div style="margin-top:10px; padding:6px 10px; background:rgba(239,68,68,0.2); border-radius:4px; color:#ef4444; font-weight:bold; font-size:0.85rem;">
-          CISCO SIMULATION RESULT: FAILED ❌ (Request Timed Out / Host Unreachable)
+          CISCO SIMULATION RESULT: FAILED ❌ (${failReason})
         </div>
       </div>
     `);
 
     addCiscoSimulationEvent('Failed', false, srcName, tgtName, 'ICMP', '#ef4444');
-    if (typeof showAlert === 'function') showAlert(`❌ Cisco PDU Ping: ${srcName} ➔ ${tgtName} | Status: FAILED`, 'error');
+    if (typeof showAlert === 'function') showAlert(`❌ Cisco PDU Ping: ${srcName} ➔ ${tgtName} | FAILED (${failReason})`, 'error');
     return;
   }
 
@@ -450,38 +636,49 @@ function drawTopology() {
   if (!ctx || !canvas) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Subnet Background Boxes
+  // Subnet Background Boxes with Live Power Status
+  const b1Online = isBoothOnline('booth1');
+  const b2Online = isBoothOnline('booth2');
+  const b3Online = isBoothOnline('booth3');
+
   drawZoneBox(130, 180, 260, 340, 'rgba(59, 130, 246, 0.12)', '#3b82f6', 'SERVER FARM (VLAN 10)');
-  drawZoneBox(415, 230, 150, 250, 'rgba(239, 68, 68, 0.12)', '#ef4444', 'BOOTH 1 (VLAN 20)');
-  drawZoneBox(595, 230, 150, 250, 'rgba(16, 185, 129, 0.12)', '#10b981', 'BOOTH 2 (VLAN 30)');
-  drawZoneBox(775, 230, 150, 250, 'rgba(236, 72, 153, 0.12)', '#ec4899', 'BOOTH 3 (VLAN 40)');
+  drawZoneBox(415, 230, 150, 250, b1Online ? 'rgba(239, 68, 68, 0.12)' : 'rgba(15, 23, 42, 0.75)', b1Online ? '#ef4444' : '#64748b', b1Online ? 'BOOTH 1 (VLAN 20)' : 'BOOTH 1 (VLAN 20) [OFFLINE] ⚠️', !b1Online);
+  drawZoneBox(595, 230, 150, 250, b2Online ? 'rgba(16, 185, 129, 0.12)' : 'rgba(15, 23, 42, 0.75)', b2Online ? '#10b981' : '#64748b', b2Online ? 'BOOTH 2 (VLAN 30)' : 'BOOTH 2 (VLAN 30) [OFFLINE] ⚠️', !b2Online);
+  drawZoneBox(775, 230, 150, 250, b3Online ? 'rgba(236, 72, 153, 0.12)' : 'rgba(15, 23, 42, 0.75)', b3Online ? '#ec4899' : '#64748b', b3Online ? 'BOOTH 3 (VLAN 40)' : 'BOOTH 3 (VLAN 40) [OFFLINE] ⚠️', !b3Online);
   drawZoneBox(955, 230, 175, 280, 'rgba(245, 158, 11, 0.12)', '#f59e0b', 'ADMIN MONITORING (VLAN 50)');
 
-  // Link Cables
+  // Link Cables with Live State LEDs
   topoLinks.forEach(link => {
     const fromNode = topoNodes.find(n => n.id === link.from);
     const toNode = topoNodes.find(n => n.id === link.to);
     if (!fromNode || !toNode) return;
 
+    const isLinkDown = isNodeOffline(fromNode.id) || isNodeOffline(toNode.id);
+
     ctx.beginPath();
     ctx.moveTo(fromNode.x, fromNode.y);
     ctx.lineTo(toNode.x, toNode.y);
-    ctx.strokeStyle = '#374151';
-    ctx.lineWidth = 2;
-    if (link.from === 'switch1' && link.to === 'switch2') {
+
+    if (isLinkDown) {
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.45)';
+      ctx.setLineDash([4, 4]);
+    } else if (link.from === 'switch1' && link.to === 'switch2') {
       ctx.setLineDash([4, 4]);
       ctx.strokeStyle = '#f59e0b';
     } else {
+      ctx.strokeStyle = '#374151';
       ctx.setLineDash([]);
     }
+    ctx.lineWidth = 2;
     ctx.stroke();
     ctx.setLineDash([]);
 
-    drawLinkLed(fromNode.x, fromNode.y, toNode.x, toNode.y);
+    drawLinkLed(fromNode.x, fromNode.y, toNode.x, toNode.y, isLinkDown);
   });
 
-  // Device Nodes
+  // Device Nodes with Online / Offline Badges
   topoNodes.forEach(node => {
+    const isOffline = isNodeOffline(node.id);
     const isSource = pingSourceNode && pingSourceNode.id === node.id;
     const isTarget = pingTargetNode && pingTargetNode.id === node.id;
 
@@ -507,24 +704,44 @@ function drawTopology() {
 
     ctx.beginPath();
     ctx.arc(node.x, node.y, 20, 0, Math.PI * 2);
-    ctx.fillStyle = '#1e293b';
+    ctx.fillStyle = isOffline ? '#0b0f19' : '#1e293b';
     ctx.fill();
-    ctx.strokeStyle = isSource ? '#60a5fa' : (isTarget ? '#34d399' : '#475569');
-    ctx.lineWidth = 2;
+
+    if (isOffline) {
+      ctx.setLineDash([3, 3]);
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 2;
+    } else {
+      ctx.setLineDash([]);
+      ctx.strokeStyle = isSource ? '#60a5fa' : (isTarget ? '#34d399' : '#475569');
+      ctx.lineWidth = 2;
+    }
     ctx.stroke();
+    ctx.setLineDash([]);
 
     ctx.font = '16px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(node.icon, node.x, node.y);
 
+    if (isOffline) {
+      // Red X badge on top-right of node circle
+      ctx.beginPath();
+      ctx.arc(node.x + 13, node.y - 13, 6.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#ef4444';
+      ctx.fill();
+      ctx.font = 'bold 9px sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('✕', node.x + 13, node.y - 13);
+    }
+
     ctx.font = 'bold 11px sans-serif';
-    ctx.fillStyle = isSource ? '#60a5fa' : (isTarget ? '#34d399' : '#e2e8f0');
-    ctx.fillText(node.name, node.x, node.y + 32);
+    ctx.fillStyle = isOffline ? '#94a3b8' : (isSource ? '#60a5fa' : (isTarget ? '#34d399' : '#e2e8f0'));
+    ctx.fillText(isOffline ? `${node.name} [OFF]` : node.name, node.x, node.y + 32);
 
     ctx.font = '9px monospace';
-    ctx.fillStyle = '#94a3b8';
-    ctx.fillText(node.ip, node.x, node.y + 44);
+    ctx.fillStyle = isOffline ? '#ef4444' : '#94a3b8';
+    ctx.fillText(isOffline ? 'DOWN (0.0.0.0)' : node.ip, node.x, node.y + 44);
   });
 
   // Animated Packets
@@ -545,28 +762,44 @@ function drawTopology() {
   });
 }
 
-function drawZoneBox(x, y, w, h, bg, border, label) {
+function drawZoneBox(x, y, w, h, bg, border, label, isOffline = false) {
   ctx.fillStyle = bg;
   ctx.fillRect(x, y, w, h);
-  ctx.strokeStyle = border;
-  ctx.lineWidth = 1.5;
+
+  if (isOffline) {
+    ctx.setLineDash([6, 6]);
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 2;
+  } else {
+    ctx.setLineDash([]);
+    ctx.strokeStyle = border;
+    ctx.lineWidth = 1.5;
+  }
   ctx.strokeRect(x, y, w, h);
+  ctx.setLineDash([]);
 
   ctx.font = 'bold 11px sans-serif';
-  ctx.fillStyle = border;
+  ctx.fillStyle = isOffline ? '#ef4444' : border;
   ctx.textAlign = 'left';
   ctx.fillText(label, x + 10, y + 20);
+
+  if (isOffline) {
+    ctx.font = 'bold 11px monospace';
+    ctx.fillStyle = 'rgba(239, 68, 68, 0.85)';
+    ctx.textAlign = 'center';
+    ctx.fillText('⚡ INTERFACE SHUTDOWN (OFF)', x + w / 2, y + h - 12);
+  }
 }
 
-function drawLinkLed(x1, y1, x2, y2) {
+function drawLinkLed(x1, y1, x2, y2, isDown = false) {
   const midX = (x1 + x2) / 2;
   const midY = (y1 + y2) / 2;
 
   ctx.beginPath();
   ctx.arc(midX, midY, 3.5, 0, Math.PI * 2);
-  ctx.fillStyle = '#10b981';
+  ctx.fillStyle = isDown ? '#ef4444' : '#10b981';
   ctx.fill();
-  ctx.strokeStyle = '#059669';
+  ctx.strokeStyle = isDown ? '#b91c1c' : '#059669';
   ctx.lineWidth = 1;
   ctx.stroke();
 }
@@ -617,3 +850,59 @@ function triggerDemoPacket() {
 function triggerPingTest() {
   executeRouterPing(topoNodes.find(n => n.id === 'pc8'), topoNodes.find(n => n.id === 'router0'));
 }
+
+function openCiscoInspector(node) {
+  const modal = document.getElementById('ciscoInspectorModal');
+  if (!modal) return;
+
+  const iconEl = document.getElementById('ciscoDeviceIcon');
+  const titleEl = document.getElementById('ciscoDeviceTitle');
+  const bodyEl = document.getElementById('ciscoDeviceBody');
+
+  if (iconEl) iconEl.textContent = node.icon || '🖥️';
+  if (titleEl) titleEl.textContent = `${node.name} (${node.model || 'Cisco Device'})`;
+
+  const bKey = getNodeBooth(node.id);
+  const isOff = isNodeOffline(node.id);
+  const bInfo = bKey ? boothStatus[bKey] : null;
+
+  if (bodyEl) {
+    bodyEl.innerHTML = `
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1rem; font-size: 0.85rem;">
+        <div><strong>Device ID:</strong> <code>${node.id}</code></div>
+        <div><strong>IP Address:</strong> <code style="color:#60a5fa;">${node.ip}</code></div>
+        <div><strong>Subnet Mask:</strong> <code>${node.mask || '255.255.255.0'}</code></div>
+        <div><strong>MAC Address:</strong> <code>${node.mac || '0000.0000.0000'}</code></div>
+        <div><strong>Device Type:</strong> <span class="badge badge-info">${node.type}</span></div>
+        <div><strong>Interface State:</strong> ${isOff ? '<span class="badge badge-danger">● Administratively Down</span>' : '<span class="badge badge-success">● Connected / Up</span>'}</div>
+      </div>
+      ${bInfo ? `
+        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem;">
+          <div style="font-weight: bold; margin-bottom: 4px; color:${bInfo.online ? '#10b981' : '#ef4444'};">
+            ${bInfo.name} - VLAN ${bInfo.vlan} (${bInfo.subnet})
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.8rem;">
+            Power State: <strong>${bInfo.online ? '🟢 ONLINE (Interface UP)' : '🔴 OFFLINE (Port Shutdown)'}</strong>
+          </div>
+          <button class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; width: auto; background:${bInfo.online ? '#ef4444' : '#10b981'};" onclick="toggleBoothPower('${bKey}'); closeCiscoInspector();">
+            ${bInfo.online ? '🔴 Power OFF This Booth' : '🟢 Power ON This Booth'}
+          </button>
+        </div>
+      ` : ''}
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+        <button class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; width: auto;" onclick="closeCiscoInspector(); handleNodeClick(topoNodes.find(n => n.id === '${node.id}'));">
+          📡 Select for ICMP Ping
+        </button>
+      </div>
+    `;
+  }
+
+  modal.classList.add('show');
+}
+window.openCiscoInspector = openCiscoInspector;
+
+function closeCiscoInspector() {
+  const modal = document.getElementById('ciscoInspectorModal');
+  if (modal) modal.classList.remove('show');
+}
+window.closeCiscoInspector = closeCiscoInspector;
