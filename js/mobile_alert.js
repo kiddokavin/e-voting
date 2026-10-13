@@ -1036,7 +1036,7 @@ async function dispatchRealNormalSms(boothId, isShutdown) {
   }
 }
 
-// Open Native SMS App on Device (Phone Link / Mobile Messages)
+// Open Native SMS App on Device (Mobile SMS, WhatsApp, or Desktop Fallback)
 function openDeviceSmsApp(boothId = 'booth1') {
   if (!userAlertPhone) {
     const input = prompt('Enter your 10-digit mobile number to send SMS:');
@@ -1050,13 +1050,66 @@ function openDeviceSmsApp(boothId = 'booth1') {
 
   let smsBody;
   if (!isOnline) {
-    smsBody = `[GOVT E-VOTING ALERT] ${officer.boothName.toUpperCase()} IS OFF! Network interface administratively SHUT DOWN by Router0 at ${timeNow}. EVM terminals OFFLINE.`;
+    smsBody = `🚨 [GOVT E-VOTING ALERT] ${officer.boothName.toUpperCase()} IS OFF! Network interface administratively SHUT DOWN by Router0 at ${timeNow}. EVM terminals OFFLINE.`;
   } else {
-    smsBody = `[GOVT E-VOTING INFO] ${officer.boothName.toUpperCase()} IS ON! Network interface restored to ACTIVE state at ${timeNow}. EVM terminals ONLINE.`;
+    smsBody = `🟢 [GOVT E-VOTING INFO] ${officer.boothName.toUpperCase()} IS ON! Network interface restored to ACTIVE state at ${timeNow}. EVM terminals ONLINE.`;
   }
 
-  const smsUri = `sms:+91${userAlertPhone}?body=${encodeURIComponent(smsBody)}`;
-  window.open(smsUri, '_blank');
+  const isMobile = /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+
+  if (isMobile) {
+    // Direct mobile SMS trigger
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const smsUri = `sms:+91${userAlertPhone}${isIOS ? '&' : '?'}body=${encodeURIComponent(smsBody)}`;
+    window.location.href = smsUri;
+  } else {
+    // Desktop Laptop: Show Desktop SMS & WhatsApp Helper Modal
+    openDesktopSmsModal(smsBody, boothId);
+  }
+}
+
+function openDesktopSmsModal(smsBody, boothId = 'booth1') {
+  const modal = document.getElementById('desktopSmsModal');
+  const previewEl = document.getElementById('desktopSmsPreviewText');
+  const waBtn = document.getElementById('desktopSmsWhatsAppBtn');
+  const copyBtn = document.getElementById('desktopSmsCopyBtn');
+
+  if (previewEl) previewEl.textContent = smsBody;
+
+  if (waBtn) {
+    waBtn.onclick = () => {
+      const waUrl = `https://wa.me/91${userAlertPhone}?text=${encodeURIComponent(smsBody)}`;
+      window.open(waUrl, '_blank');
+    };
+  }
+
+  if (copyBtn) {
+    copyBtn.onclick = () => {
+      navigator.clipboard.writeText(smsBody).then(() => {
+        if (typeof showAlert === 'function') showAlert('📋 SMS text copied to clipboard!', 'success');
+      });
+    };
+  }
+
+  if (modal) modal.classList.add('show');
+}
+
+function closeDesktopSmsModal() {
+  const modal = document.getElementById('desktopSmsModal');
+  if (modal) modal.classList.remove('show');
+}
+
+function openWhatsAppAlert(boothId = 'booth1') {
+  const isOnline = (typeof isBoothOnline === 'function') ? isBoothOnline(boothId) : true;
+  const officer = boothOfficers[boothId] || { boothName: 'Booth 1', vlan: 20 };
+  const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  const msg = !isOnline
+    ? `🚨 [GOVT E-VOTING ALERT] ${officer.boothName.toUpperCase()} IS OFF! Network interface administratively SHUT DOWN by Router0 at ${timeNow}. EVM terminals OFFLINE.`
+    : `🟢 [GOVT E-VOTING INFO] ${officer.boothName.toUpperCase()} IS ON! Network interface restored to ACTIVE state at ${timeNow}. EVM terminals ONLINE.`;
+
+  const waUrl = `https://wa.me/91${userAlertPhone || '9442218610'}?text=${encodeURIComponent(msg)}`;
+  window.open(waUrl, '_blank');
 }
 
 // Save User Mobile from Form
@@ -1093,6 +1146,11 @@ window.testNtfyPushNow = testNtfyPushNow;
 window.sendRealFast2Sms = sendRealFast2Sms;
 window.getFast2SmsApiKey = getFast2SmsApiKey;
 window.setFast2SmsApiKey = setFast2SmsApiKey;
+
+// Desktop SMS & WhatsApp window exports
+window.openDesktopSmsModal = openDesktopSmsModal;
+window.closeDesktopSmsModal = closeDesktopSmsModal;
+window.openWhatsAppAlert = openWhatsAppAlert;
 
 // Twilio window exports
 window.openTwilioModal = openTwilioModal;
