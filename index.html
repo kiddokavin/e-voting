@@ -942,12 +942,9 @@
         <form onsubmit="handleSaveTwilioConfig(event)">
           <div class="form-group" style="margin-bottom: 0.8rem;">
             <label style="display: block; font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.25rem;">
-              Twilio Account SID (Starts with <code>AC...</code>): <span style="color:#ef4444;">*</span>
+              Twilio Account SID: <span style="color:#10b981; font-weight:bold; font-size:0.7rem;">✔ Pre-linked</span>
             </label>
-            <input type="text" id="twilioAccountSidInput" placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" style="width: 100%; padding: 0.55rem 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(244, 63, 94, 0.5); border-radius: 6px; color: #fff; font-size: 0.85rem; outline: none; box-sizing: border-box;">
-            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 0.2rem;">
-              ℹ️ Twilio Console (<code>console.twilio.com</code>) dashboard-la "Account Info"-la irukkura <strong>Account SID (AC...)</strong>.
-            </div>
+            <input type="text" id="twilioAccountSidInput" readonly style="width: 100%; padding: 0.55rem 0.8rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; color: #6ee7b7; font-size: 0.82rem; outline: none; box-sizing: border-box; cursor: not-allowed;">
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 0.8rem;">
@@ -967,12 +964,9 @@
 
           <div class="form-group" style="margin-bottom: 1rem;">
             <label style="display: block; font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.25rem;">
-              Twilio Sender Phone Number (From): <span style="color:#ef4444;">*</span>
+              Twilio Sender Phone Number (From): <span style="color:#10b981; font-weight:bold; font-size:0.7rem;">✔ Pre-linked</span>
             </label>
-            <input type="tel" id="twilioFromNumberInput" placeholder="+1xxxxxxxxxx" style="width: 100%; padding: 0.55rem 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(244, 63, 94, 0.5); border-radius: 6px; color: #fff; font-size: 0.85rem; outline: none; box-sizing: border-box;">
-            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 0.2rem;">
-              ℹ️ Unga Twilio Phone Number (Phone Numbers → Active Numbers section-la kedaikkum).
-            </div>
+            <input type="tel" id="twilioFromNumberInput" readonly style="width: 100%; padding: 0.55rem 0.8rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; color: #6ee7b7; font-size: 0.85rem; outline: none; box-sizing: border-box; cursor: not-allowed;">
           </div>
 
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 0.6rem;">

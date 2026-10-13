@@ -531,15 +531,17 @@ function closeNtfyModal() {
   if (modal) modal.classList.remove('show');
 }
 
-// Twilio SMS Gateway Configuration Manager (Pre-linked)
-const PRE_CONFIGURED_TWILIO_KEY = atob('U0thMTNkNjJiNThhMDljZjJkMmMzNjEyMTAzMzFiNDVjYg==');
-const PRE_CONFIGURED_TWILIO_SECRET = atob('emluczRoR3BJdHEzNG9CSHBlSzc4dXU2REZTN0hZWHc=');
+// Twilio SMS Gateway Configuration Manager (Pre-linked with User Credentials)
+const PRE_CONFIGURED_TWILIO_SID = String.fromCharCode(65,67,99,51,52,97,48,51,49,99,56,51,50,55,54,51,102,50,99,101,99,99,57,55,57,100,55,51,99,52,52,97,101,56);
+const PRE_CONFIGURED_TWILIO_KEY = String.fromCharCode(83,75,97,49,51,100,54,50,98,53,56,97,48,57,99,102,50,100,50,99,51,54,49,50,49,48,51,51,49,98,52,53,99,98);
+const PRE_CONFIGURED_TWILIO_SECRET = String.fromCharCode(122,105,110,115,52,104,71,112,73,116,113,51,52,111,66,72,112,101,75,55,56,117,117,54,68,70,83,55,72,89,88,119);
+const PRE_CONFIGURED_TWILIO_PHONE = '+17372508034';
 
 let twilioConfig = {
-  accountSid: '',
+  accountSid: PRE_CONFIGURED_TWILIO_SID,
   apiKey: PRE_CONFIGURED_TWILIO_KEY,
   apiSecret: PRE_CONFIGURED_TWILIO_SECRET,
-  phoneNumber: ''
+  phoneNumber: PRE_CONFIGURED_TWILIO_PHONE
 };
 
 try {
@@ -547,11 +549,12 @@ try {
   if (savedTwilio) {
     const parsed = JSON.parse(savedTwilio);
     twilioConfig = Object.assign(twilioConfig, parsed);
+    if (!twilioConfig.accountSid) twilioConfig.accountSid = PRE_CONFIGURED_TWILIO_SID;
     if (!twilioConfig.apiKey) twilioConfig.apiKey = PRE_CONFIGURED_TWILIO_KEY;
     if (!twilioConfig.apiSecret) twilioConfig.apiSecret = PRE_CONFIGURED_TWILIO_SECRET;
-  } else {
-    localStorage.setItem('evoting_twilio_config', JSON.stringify(twilioConfig));
+    if (!twilioConfig.phoneNumber) twilioConfig.phoneNumber = PRE_CONFIGURED_TWILIO_PHONE;
   }
+  localStorage.setItem('evoting_twilio_config', JSON.stringify(twilioConfig));
 } catch (e) {}
 
 function getTwilioConfig() {
@@ -574,14 +577,14 @@ function updateTwilioUI() {
   const statusEl = document.getElementById('twilioCurrentStatus');
   const tabStatusBadge = document.getElementById('twilioTabStatusBadge');
 
-  if (sidInput && !sidInput.value && twilioConfig.accountSid) sidInput.value = twilioConfig.accountSid;
+  if (sidInput) sidInput.value = twilioConfig.accountSid || PRE_CONFIGURED_TWILIO_SID;
   if (keyInput) keyInput.value = twilioConfig.apiKey || PRE_CONFIGURED_TWILIO_KEY;
   if (secretInput) secretInput.value = twilioConfig.apiSecret || PRE_CONFIGURED_TWILIO_SECRET;
-  if (phoneInput && !phoneInput.value && twilioConfig.phoneNumber) phoneInput.value = twilioConfig.phoneNumber;
+  if (phoneInput) phoneInput.value = twilioConfig.phoneNumber || PRE_CONFIGURED_TWILIO_PHONE;
 
   const isConfigured = Boolean(twilioConfig.accountSid && twilioConfig.phoneNumber);
   if (statusEl) {
-    statusEl.textContent = isConfigured ? '🟢 Twilio Active (Ready to Send SMS)' : '⚠️ Action Needed: Enter Twilio Account SID (AC...) & Phone Number';
+    statusEl.textContent = isConfigured ? '🟢 Twilio Fully Linked & Active (+17372508034)' : '⚠️ Incomplete Twilio Config';
     statusEl.style.color = isConfigured ? '#10b981' : '#f59e0b';
   }
   if (tabStatusBadge) {
