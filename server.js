@@ -3,6 +3,7 @@ const cors = require('cors');
 const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
+const https = require('https');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -506,6 +507,61 @@ app.post('/api/admin/control', (req, res) => {
 
   saveDB();
   res.json({ success: true, message: `Admin action '${action}' completed successfully`, status: db.electionStatus });
+});
+
+// 8. Real SMS Dispatch Gateway (Fast2SMS / Twilio)
+app.post('/api/send-sms', (req, res) => {
+  const { phone, message, apiKey } = req.body;
+  const cleanPhone = (phone || '').replace(/[^0-9]/g, '').slice(-10);
+
+  if (!cleanPhone || cleanPhone.length !== 10) {
+    return res.status(400).json({ success: false, message: 'Invalid 10-digit mobile number' });
+  }
+
+  const fastKey = apiKey || process.env.FAST2SMS_API_KEY;
+  if (!fastKey) {
+    return res.status(400).json({ success: false, message: 'Fast2SMS API Key is required' });
+  }
+
+  const postData = JSON.stringify({
+    route: 'q',
+    message: message || '[GOVT E-VOTING ALERT] System alert',
+    language: 'english',
+    flash: 0,
+    numbers: cleanPhone
+  });
+
+  const options = {
+    hostname: 'www.fast2sms.com',
+    port: 443,
+    path: '/dev/bulkV2',
+    method: 'POST',
+    headers: {
+      'authorization': fastKey,
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(postData)
+    }
+  };
+
+  const httpsReq = https.request(options, (httpsRes) => {
+    let body = '';
+    httpsRes.on('data', chunk => body += chunk);
+    httpsRes.on('end', () => {
+      try {
+        const parsed = JSON.parse(body);
+        res.json({ success: parsed.return || false, data: parsed });
+      } catch (e) {
+        res.json({ success: false, raw: body });
+      }
+    });
+  });
+
+  httpsReq.on('error', (err) => {
+    res.status(500).json({ success: false, message: err.message });
+  });
+
+  httpsReq.write(postData);
+  httpsReq.end();
 });
 
 // Start Server

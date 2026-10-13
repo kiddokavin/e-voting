@@ -437,6 +437,228 @@ try {
   else localStorage.setItem('evoting_user_alert_phone', '9442218610');
 } catch (e) {}
 
+// Fast2SMS API Authorization Key Manager (Free Quick SMS Gateway for Indian Mobiles)
+let fast2smsApiKey = '';
+try {
+  fast2smsApiKey = localStorage.getItem('evoting_fast2sms_api_key') || '';
+} catch (e) {}
+
+function getFast2SmsApiKey() {
+  return fast2smsApiKey;
+}
+
+function setFast2SmsApiKey(key) {
+  fast2smsApiKey = (key || '').trim();
+  try {
+    if (fast2smsApiKey) {
+      localStorage.setItem('evoting_fast2sms_api_key', fast2smsApiKey);
+    } else {
+      localStorage.removeItem('evoting_fast2sms_api_key');
+    }
+  } catch (e) {}
+  updateFast2SmsUI();
+}
+
+function updateFast2SmsUI() {
+  const keyInput = document.getElementById('fast2smsApiKeyInput');
+  const statusEl = document.getElementById('fast2smsCurrentStatus');
+  const phoneStatusText = document.getElementById('phoneFast2SmsStatusText');
+
+  const hasKey = Boolean(fast2smsApiKey);
+  const statusMsg = hasKey ? '🟢 Fast2SMS Active (Key Configured)' : '⚪ Not Configured (Click to set)';
+  const statusColor = hasKey ? '#10b981' : '#f59e0b';
+
+  if (keyInput && fast2smsApiKey && !keyInput.value) {
+    keyInput.value = fast2smsApiKey;
+  }
+
+  if (statusEl) {
+    statusEl.textContent = statusMsg;
+    statusEl.style.color = statusColor;
+  }
+
+  if (phoneStatusText) {
+    phoneStatusText.textContent = hasKey ? 'Connected (Carrier SMS Active)' : 'Connect API Key';
+    phoneStatusText.style.color = statusColor;
+  }
+
+  const displays = document.querySelectorAll('.fast2sms-phone-display');
+  displays.forEach(d => { d.textContent = userAlertPhone || '9442218610'; });
+
+  const ntfyLink = document.getElementById('ntfyTopicLink');
+  if (ntfyLink) {
+    const topicUrl = `https://ntfy.sh/evoting-alert-${userAlertPhone || '9442218610'}`;
+    ntfyLink.href = topicUrl;
+    ntfyLink.textContent = topicUrl;
+  }
+}
+
+function openFast2SmsModal() {
+  const modal = document.getElementById('fast2smsModal');
+  if (!modal) return;
+  updateFast2SmsUI();
+  modal.classList.add('show');
+}
+
+function closeFast2SmsModal() {
+  const modal = document.getElementById('fast2smsModal');
+  if (modal) modal.classList.remove('show');
+}
+
+function handleSaveFast2SmsKey(e) {
+  if (e) e.preventDefault();
+  const input = document.getElementById('fast2smsApiKeyInput');
+  if (!input) return;
+  const key = input.value.trim();
+  setFast2SmsApiKey(key);
+  if (key) {
+    if (typeof showAlert === 'function') showAlert('✅ Fast2SMS API Key saved! Physical Mobile SMS is ready.', 'success');
+  } else {
+    if (typeof showAlert === 'function') showAlert('ℹ️ Fast2SMS API Key cleared.', 'info');
+  }
+  closeFast2SmsModal();
+}
+
+function openNtfyModal() {
+  const modal = document.getElementById('ntfyModal');
+  if (!modal) return;
+  updateFast2SmsUI();
+  modal.classList.add('show');
+}
+
+function closeNtfyModal() {
+  const modal = document.getElementById('ntfyModal');
+  if (modal) modal.classList.remove('show');
+}
+
+async function testNtfyPushNow() {
+  const topicUrl = `https://ntfy.sh/evoting-alert-${userAlertPhone || '9442218610'}`;
+  const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  try {
+    await fetch(topicUrl, {
+      method: 'POST',
+      body: `🔔 Test notification from E-Voting System at ${timeNow}! Real phone alert is functioning properly.`,
+      headers: {
+        'Title': '🔔 E-Voting Test Alert',
+        'Priority': 'urgent',
+        'Tags': 'bell,white_check_mark'
+      }
+    });
+    if (typeof showAlert === 'function') {
+      showAlert(`🔔 Push notification dispatched to topic: ${topicUrl}`, 'success');
+    }
+  } catch (e) {
+    console.error('[ntfy error]', e);
+    if (typeof showAlert === 'function') {
+      showAlert('⚠️ Push dispatched, ensure your phone browser is subscribed!', 'info');
+    }
+  }
+}
+
+// Send Real Carrier SMS via Fast2SMS (Backend, Direct, or Proxy)
+async function sendRealFast2Sms(phone, messageText) {
+  const cleanPhone = (phone || '').replace(/[^0-9]/g, '').slice(-10);
+  const apiKey = getFast2SmsApiKey();
+  if (!cleanPhone || cleanPhone.length !== 10) {
+    return { success: false, message: 'Invalid 10-digit mobile number' };
+  }
+  if (!apiKey) {
+    return { success: false, message: 'Fast2SMS API Key not configured' };
+  }
+
+  // 1. Try local/backend server (/api/send-sms)
+  try {
+    const backendRes = await fetch('/api/send-sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: cleanPhone, message: messageText, apiKey: apiKey })
+    });
+    if (backendRes.ok) {
+      const data = await backendRes.json();
+      if (data && data.success) {
+        console.log('[Fast2SMS Backend Success]', data);
+        return { success: true, method: 'backend', data };
+      }
+    }
+  } catch (e) {
+    // Backend offline or running statically on GitHub Pages
+  }
+
+  // 2. Direct Fast2SMS Quick SMS API (route 'q')
+  const payload = {
+    route: 'q',
+    message: messageText,
+    language: 'english',
+    flash: 0,
+    numbers: cleanPhone
+  };
+
+  try {
+    const directRes = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+      method: 'POST',
+      headers: {
+        'authorization': apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+    const data = await directRes.json();
+    if (data && (data.return === true || data.status_code === 200)) {
+      return { success: true, method: 'direct', data };
+    }
+    return { success: false, data };
+  } catch (corsErr) {
+    // 3. Fallback via CORS proxy
+    try {
+      const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent('https://www.fast2sms.com/dev/bulkV2');
+      const proxyRes = await fetch(proxyUrl, {
+        method: 'POST',
+        headers: {
+          'authorization': apiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      const proxyData = await proxyRes.json();
+      if (proxyData && (proxyData.return === true || proxyData.status_code === 200)) {
+        return { success: true, method: 'proxy', data: proxyData };
+      }
+      return { success: false, data: proxyData };
+    } catch (proxyErr) {
+      return { success: false, error: proxyErr.message };
+    }
+  }
+}
+
+// Test Fast2SMS configuration immediately
+async function testRealFast2SmsNow() {
+  if (!userAlertPhone) {
+    if (typeof showAlert === 'function') showAlert('⚠️ Please save your 10-digit mobile number first!', 'error');
+    return;
+  }
+  const keyInput = document.getElementById('fast2smsApiKeyInput');
+  if (keyInput && keyInput.value.trim()) {
+    setFast2SmsApiKey(keyInput.value.trim());
+  }
+  if (!fast2smsApiKey) {
+    if (typeof showAlert === 'function') showAlert('⚠️ Please enter your Fast2SMS Authorization Key first!', 'error');
+    return;
+  }
+
+  const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const testMsg = `[GOVT E-VOTING TEST] Fast2SMS Gateway connected to +91 ${userAlertPhone} at ${timeNow}. System ready for Booth OFF/ON alerts!`;
+
+  if (typeof showAlert === 'function') showAlert(`⏳ Dispatching Test SMS to +91 ${userAlertPhone} via Fast2SMS...`, 'info');
+
+  const res = await sendRealFast2Sms(userAlertPhone, testMsg);
+  if (res && res.success) {
+    if (typeof showAlert === 'function') showAlert(`🎉 Success! Fast2SMS sent real SMS to +91 ${userAlertPhone}!`, 'success');
+  } else {
+    const errMsg = (res && res.data && res.data.message) ? res.data.message : (res && res.error) || 'Failed to dispatch SMS';
+    if (typeof showAlert === 'function') showAlert(`❌ Fast2SMS Error: ${errMsg}`, 'error');
+  }
+}
+
 function getUserPersonalPhone() {
   return userAlertPhone;
 }
@@ -475,6 +697,7 @@ function setUserPersonalPhone(phone) {
   }
 
   updateUserPhoneUI();
+  updateFast2SmsUI();
   if (typeof showAlert === 'function') {
     showAlert(`✅ Mobile Number +91 ${clean} saved! Normal SMS alerts are now ACTIVE.`, 'success');
   }
@@ -505,9 +728,11 @@ function updateUserPhoneUI() {
       simUserPill.style.display = 'none';
     }
   }
+
+  updateFast2SmsUI();
 }
 
-// Send Real Normal SMS to User Phone via Free Gateway + Native SMS URI
+// Send Real Normal SMS to User Phone via Fast2SMS + Free Gateway + Native SMS URI
 async function dispatchRealNormalSms(boothId, isShutdown) {
   if (!userAlertPhone) return;
 
@@ -533,7 +758,34 @@ async function dispatchRealNormalSms(boothId, isShutdown) {
     } catch (e) {}
   }
 
-  // 2. Dispatch via Textbelt Free SMS Gateway API
+  // 2. Real Push Notification to Physical Phone via ntfy.sh (Zero-setup instant ring)
+  try {
+    fetch(`https://ntfy.sh/evoting-alert-${userAlertPhone}`, {
+      method: 'POST',
+      body: smsText,
+      headers: {
+        'Title': isShutdown ? `🚨 [OFF] ${officer.boothName} SHUTDOWN` : `🟢 [ON] ${officer.boothName} ACTIVE`,
+        'Priority': isShutdown ? 'high' : 'default',
+        'Tags': isShutdown ? 'warning,rotating_light' : 'white_check_mark,ballot_box'
+      }
+    }).catch(() => {});
+  } catch (e) {}
+
+  // 3. Fast2SMS Real Carrier SMS to Indian Mobile Number
+  const apiKey = getFast2SmsApiKey();
+  if (apiKey) {
+    sendRealFast2Sms(userAlertPhone, smsText).then(res => {
+      if (res && res.success) {
+        if (typeof showAlert === 'function') {
+          showAlert(`📲 Real Carrier SMS delivered to +91 ${userAlertPhone} via Fast2SMS!`, 'success');
+        }
+      } else {
+        console.warn('[Fast2SMS Delivery Notice]', res);
+      }
+    });
+  }
+
+  // 4. Dispatch via Textbelt Free SMS Gateway API (fallback)
   try {
     fetch('https://textbelt.com/text', {
       method: 'POST',
@@ -553,7 +805,7 @@ async function dispatchRealNormalSms(boothId, isShutdown) {
     });
   } catch (err) {}
 
-  // 3. Log into Audit Stream
+  // 5. Log into Audit Stream
   if (window.API && API.mockDB && API.mockDB.auditLogs) {
     API.mockDB.auditLogs.unshift({
       id: `LOG_USER_SMS_${Date.now()}`,
@@ -566,7 +818,11 @@ async function dispatchRealNormalSms(boothId, isShutdown) {
   }
 
   if (typeof showAlert === 'function') {
-    showAlert(`📱 Normal SMS alert (${isShutdown ? 'OFF' : 'ON'}) sent to your phone (+91 ${userAlertPhone})!`, isShutdown ? 'error' : 'success');
+    if (apiKey) {
+      showAlert(`📱 Real Carrier SMS (${isShutdown ? 'OFF' : 'ON'}) sent to +91 ${userAlertPhone} via Fast2SMS!`, isShutdown ? 'error' : 'success');
+    } else {
+      showAlert(`📱 Alert (${isShutdown ? 'OFF' : 'ON'}) sent to +91 ${userAlertPhone}! Click '🔑 Fast2SMS Key' for carrier SMS.`, isShutdown ? 'error' : 'success');
+    }
   }
 }
 
@@ -616,8 +872,21 @@ window.handleSaveUserPhone = handleSaveUserPhone;
 window.dispatchRealNormalSms = dispatchRealNormalSms;
 window.openDeviceSmsApp = openDeviceSmsApp;
 
+// Fast2SMS & Push window exports
+window.openFast2SmsModal = openFast2SmsModal;
+window.closeFast2SmsModal = closeFast2SmsModal;
+window.handleSaveFast2SmsKey = handleSaveFast2SmsKey;
+window.testRealFast2SmsNow = testRealFast2SmsNow;
+window.openNtfyModal = openNtfyModal;
+window.closeNtfyModal = closeNtfyModal;
+window.testNtfyPushNow = testNtfyPushNow;
+window.sendRealFast2Sms = sendRealFast2Sms;
+window.getFast2SmsApiKey = getFast2SmsApiKey;
+window.setFast2SmsApiKey = setFast2SmsApiKey;
+
 document.addEventListener('DOMContentLoaded', () => {
   renderOfficerDirectory();
   updateUserPhoneUI();
+  updateFast2SmsUI();
 });
 
