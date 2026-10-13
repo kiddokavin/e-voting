@@ -511,16 +511,84 @@ app.post('/api/admin/control', (req, res) => {
 
 // 8. Real SMS Dispatch Gateway (Fast2SMS / Twilio)
 app.post('/api/send-sms', (req, res) => {
-  const { phone, message, apiKey } = req.body;
+  const { provider, phone, message, apiKey, twilioAccountSid, twilioApiKey, twilioApiSecret, twilioPhoneNumber } = req.body;
   const cleanPhone = (phone || '').replace(/[^0-9]/g, '').slice(-10);
 
   if (!cleanPhone || cleanPhone.length !== 10) {
     return res.status(400).json({ success: false, message: 'Invalid 10-digit mobile number' });
   }
 
+  // A. Twilio SMS Gateway Dispatch
+  if (provider === 'twilio' || twilioAccountSid || (twilioApiKey && !apiKey)) {
+    const accountSid = (twilioAccountSid || process.env.TWILIO_ACCOUNT_SID || '').trim();
+    const keySid = (twilioApiKey || process.env.TWILIO_API_KEY_SID || '').trim();
+    const secret = (twilioApiSecret || process.env.TWILIO_API_KEY_SECRET || '').trim();
+    const fromPhone = (twilioPhoneNumber || process.env.TWILIO_PHONE_NUMBER || '').trim();
+
+    if (!accountSid) {
+      return res.status(400).json({
+        success: false,
+        message: 'Twilio Account SID (starts with AC...) is required. Please check your Twilio Console dashboard.'
+      });
+    }
+
+    if (!fromPhone) {
+      return res.status(400).json({
+        success: false,
+        message: 'Twilio Phone Number (From number) is required.'
+      });
+    }
+
+    const postParams = new URLSearchParams({
+      To: '+91' + cleanPhone,
+      From: fromPhone,
+      Body: message || '[GOVT E-VOTING ALERT] System alert'
+    }).toString();
+
+    const auth = Buffer.from(`${keySid}:${secret}`).toString('base64');
+
+    const options = {
+      hostname: 'api.twilio.com',
+      port: 443,
+      path: `/2010-04-01/Accounts/${accountSid}/Messages.json`,
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(postParams)
+      }
+    };
+
+    const httpsReq = https.request(options, (httpsRes) => {
+      let body = '';
+      httpsRes.on('data', chunk => body += chunk);
+      httpsRes.on('end', () => {
+        try {
+          const parsed = JSON.parse(body);
+          if (parsed.sid) {
+            res.json({ success: true, provider: 'twilio', sid: parsed.sid, data: parsed });
+          } else {
+            res.status(400).json({ success: false, provider: 'twilio', message: parsed.message || 'Twilio Error', data: parsed });
+          }
+        } catch (e) {
+          res.json({ success: false, raw: body });
+        }
+      });
+    });
+
+    httpsReq.on('error', (err) => {
+      res.status(500).json({ success: false, message: err.message });
+    });
+
+    httpsReq.write(postParams);
+    httpsReq.end();
+    return;
+  }
+
+  // B. Fast2SMS Quick SMS Dispatch
   const fastKey = apiKey || process.env.FAST2SMS_API_KEY;
   if (!fastKey) {
-    return res.status(400).json({ success: false, message: 'Fast2SMS API Key is required' });
+    return res.status(400).json({ success: false, message: 'Fast2SMS API Key or Twilio credentials required' });
   }
 
   const postData = JSON.stringify({

@@ -531,6 +531,191 @@ function closeNtfyModal() {
   if (modal) modal.classList.remove('show');
 }
 
+// Twilio SMS Gateway Configuration Manager
+let twilioConfig = {
+  accountSid: '',
+  apiKey: '',
+  apiSecret: '',
+  phoneNumber: ''
+};
+
+try {
+  const savedTwilio = localStorage.getItem('evoting_twilio_config');
+  if (savedTwilio) {
+    twilioConfig = Object.assign(twilioConfig, JSON.parse(savedTwilio));
+  } else {
+    localStorage.setItem('evoting_twilio_config', JSON.stringify(twilioConfig));
+  }
+} catch (e) {}
+
+function getTwilioConfig() {
+  return twilioConfig;
+}
+
+function setTwilioConfig(newConfig) {
+  twilioConfig = Object.assign(twilioConfig, newConfig);
+  try {
+    localStorage.setItem('evoting_twilio_config', JSON.stringify(twilioConfig));
+  } catch (e) {}
+  updateTwilioUI();
+}
+
+function updateTwilioUI() {
+  const sidInput = document.getElementById('twilioAccountSidInput');
+  const keyInput = document.getElementById('twilioApiKeyInput');
+  const secretInput = document.getElementById('twilioSecretInput');
+  const phoneInput = document.getElementById('twilioFromNumberInput');
+  const statusEl = document.getElementById('twilioCurrentStatus');
+  const tabStatusBadge = document.getElementById('twilioTabStatusBadge');
+
+  if (sidInput && !sidInput.value && twilioConfig.accountSid) sidInput.value = twilioConfig.accountSid;
+  if (keyInput && !keyInput.value && twilioConfig.apiKey) keyInput.value = twilioConfig.apiKey;
+  if (secretInput && !secretInput.value && twilioConfig.apiSecret) secretInput.value = twilioConfig.apiSecret;
+  if (phoneInput && !phoneInput.value && twilioConfig.phoneNumber) phoneInput.value = twilioConfig.phoneNumber;
+
+  const isConfigured = Boolean(twilioConfig.accountSid && twilioConfig.phoneNumber);
+  if (statusEl) {
+    statusEl.textContent = isConfigured ? '🟢 Twilio Active (Ready to Send SMS)' : '⚠️ Action Needed: Enter Twilio Account SID (AC...) & Phone Number';
+    statusEl.style.color = isConfigured ? '#10b981' : '#f59e0b';
+  }
+  if (tabStatusBadge) {
+    tabStatusBadge.style.display = isConfigured ? 'inline-block' : 'none';
+  }
+}
+
+function openTwilioModal() {
+  const modal = document.getElementById('twilioModal');
+  if (!modal) return;
+  updateTwilioUI();
+  modal.classList.add('show');
+}
+
+function closeTwilioModal() {
+  const modal = document.getElementById('twilioModal');
+  if (modal) modal.classList.remove('show');
+}
+
+function handleSaveTwilioConfig(e) {
+  if (e) e.preventDefault();
+  const sid = (document.getElementById('twilioAccountSidInput')?.value || '').trim();
+  const key = (document.getElementById('twilioApiKeyInput')?.value || '').trim();
+  const secret = (document.getElementById('twilioSecretInput')?.value || '').trim();
+  const phone = (document.getElementById('twilioFromNumberInput')?.value || '').trim();
+
+  setTwilioConfig({ accountSid: sid, apiKey: key, apiSecret: secret, phoneNumber: phone });
+
+  if (sid && phone) {
+    if (typeof showAlert === 'function') showAlert('✅ Twilio Credentials saved! Direct Twilio SMS is ACTIVE.', 'success');
+  } else {
+    if (typeof showAlert === 'function') showAlert('ℹ️ Twilio saved. Don\'t forget to enter your Account SID (AC...) and Twilio Phone Number!', 'info');
+  }
+  closeTwilioModal();
+}
+
+async function sendRealTwilioSms(phone, messageText) {
+  const cleanPhone = (phone || '').replace(/[^0-9]/g, '').slice(-10);
+  const cfg = getTwilioConfig();
+
+  if (!cleanPhone || cleanPhone.length !== 10) {
+    return { success: false, message: 'Invalid 10-digit mobile number' };
+  }
+  if (!cfg.accountSid) {
+    return { success: false, message: 'Twilio Account SID (starts with AC...) is missing' };
+  }
+  if (!cfg.phoneNumber) {
+    return { success: false, message: 'Twilio Phone Number (From) is missing' };
+  }
+
+  // 1. Try local/backend server
+  try {
+    const backendRes = await fetch('/api/send-sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        provider: 'twilio',
+        phone: cleanPhone,
+        message: messageText,
+        twilioAccountSid: cfg.accountSid,
+        twilioApiKey: cfg.apiKey,
+        twilioApiSecret: cfg.apiSecret,
+        twilioPhoneNumber: cfg.phoneNumber
+      })
+    });
+    if (backendRes.ok) {
+      const data = await backendRes.json();
+      if (data && data.success) {
+        return { success: true, method: 'backend', data };
+      }
+      return { success: false, data };
+    }
+  } catch (backendErr) {
+    // Static / GitHub Pages fallback
+  }
+
+  // 2. Direct / Proxy to Twilio REST API
+  const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${cfg.accountSid}/Messages.json`;
+  const postParams = new URLSearchParams({
+    To: '+91' + cleanPhone,
+    From: cfg.phoneNumber,
+    Body: messageText
+  });
+  const basicAuth = btoa(`${cfg.apiKey}:${cfg.apiSecret}`);
+
+  try {
+    const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(twilioUrl);
+    const proxyRes = await fetch(proxyUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${basicAuth}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: postParams.toString()
+    });
+    const proxyData = await proxyRes.json();
+    if (proxyData && proxyData.sid) {
+      return { success: true, method: 'proxy', data: proxyData };
+    }
+    return { success: false, data: proxyData };
+  } catch (proxyErr) {
+    return { success: false, error: proxyErr.message };
+  }
+}
+
+async function testRealTwilioSmsNow() {
+  if (!userAlertPhone) {
+    if (typeof showAlert === 'function') showAlert('⚠️ Please save your 10-digit mobile number first!', 'error');
+    return;
+  }
+  const sid = (document.getElementById('twilioAccountSidInput')?.value || '').trim();
+  const key = (document.getElementById('twilioApiKeyInput')?.value || '').trim();
+  const secret = (document.getElementById('twilioSecretInput')?.value || '').trim();
+  const phone = (document.getElementById('twilioFromNumberInput')?.value || '').trim();
+  setTwilioConfig({ accountSid: sid, apiKey: key, apiSecret: secret, phoneNumber: phone });
+
+  const cfg = getTwilioConfig();
+  if (!cfg.accountSid) {
+    if (typeof showAlert === 'function') showAlert('⚠️ Please enter your Twilio Account SID (starts with AC...) from Twilio Console!', 'error');
+    return;
+  }
+  if (!cfg.phoneNumber) {
+    if (typeof showAlert === 'function') showAlert('⚠️ Please enter your Twilio Phone Number (From number)!', 'error');
+    return;
+  }
+
+  const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const testMsg = `[GOVT E-VOTING TEST] Twilio Gateway connected to +91 ${userAlertPhone} at ${timeNow}! Real SMS dispatch active.`;
+
+  if (typeof showAlert === 'function') showAlert(`⏳ Dispatching Test SMS to +91 ${userAlertPhone} via Twilio...`, 'info');
+
+  const res = await sendRealTwilioSms(userAlertPhone, testMsg);
+  if (res && res.success) {
+    if (typeof showAlert === 'function') showAlert(`🎉 Success! Twilio delivered real SMS to +91 ${userAlertPhone}! (SID: ${res.data?.sid || 'OK'})`, 'success');
+  } else {
+    const errMsg = (res && res.data && res.data.message) ? res.data.message : (res && res.error) || 'Failed to dispatch Twilio SMS';
+    if (typeof showAlert === 'function') showAlert(`❌ Twilio Error: ${errMsg}`, 'error');
+  }
+}
+
 async function testNtfyPushNow() {
   const topicUrl = `https://ntfy.sh/evoting-alert-${userAlertPhone || '9442218610'}`;
   const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -771,7 +956,21 @@ async function dispatchRealNormalSms(boothId, isShutdown) {
     }).catch(() => {});
   } catch (e) {}
 
-  // 3. Fast2SMS Real Carrier SMS to Indian Mobile Number
+  // 3. Twilio Real Carrier SMS (if configured)
+  const twilio = getTwilioConfig();
+  if (twilio.accountSid && twilio.phoneNumber) {
+    sendRealTwilioSms(userAlertPhone, smsText).then(res => {
+      if (res && res.success) {
+        if (typeof showAlert === 'function') {
+          showAlert(`📲 Real Carrier SMS delivered to +91 ${userAlertPhone} via Twilio!`, 'success');
+        }
+      } else {
+        console.warn('[Twilio Delivery Notice]', res);
+      }
+    });
+  }
+
+  // 4. Fast2SMS Real Carrier SMS to Indian Mobile Number
   const apiKey = getFast2SmsApiKey();
   if (apiKey) {
     sendRealFast2Sms(userAlertPhone, smsText).then(res => {
@@ -785,7 +984,7 @@ async function dispatchRealNormalSms(boothId, isShutdown) {
     });
   }
 
-  // 4. Dispatch via Textbelt Free SMS Gateway API (fallback)
+  // 5. Dispatch via Textbelt Free SMS Gateway API (fallback)
   try {
     fetch('https://textbelt.com/text', {
       method: 'POST',
@@ -805,7 +1004,7 @@ async function dispatchRealNormalSms(boothId, isShutdown) {
     });
   } catch (err) {}
 
-  // 5. Log into Audit Stream
+  // 6. Log into Audit Stream
   if (window.API && API.mockDB && API.mockDB.auditLogs) {
     API.mockDB.auditLogs.unshift({
       id: `LOG_USER_SMS_${Date.now()}`,
@@ -818,10 +1017,12 @@ async function dispatchRealNormalSms(boothId, isShutdown) {
   }
 
   if (typeof showAlert === 'function') {
-    if (apiKey) {
+    if (twilio.accountSid && twilio.phoneNumber) {
+      showAlert(`📱 Real Carrier SMS (${isShutdown ? 'OFF' : 'ON'}) sent to +91 ${userAlertPhone} via Twilio!`, isShutdown ? 'error' : 'success');
+    } else if (apiKey) {
       showAlert(`📱 Real Carrier SMS (${isShutdown ? 'OFF' : 'ON'}) sent to +91 ${userAlertPhone} via Fast2SMS!`, isShutdown ? 'error' : 'success');
     } else {
-      showAlert(`📱 Alert (${isShutdown ? 'OFF' : 'ON'}) sent to +91 ${userAlertPhone}! Click '🔑 Fast2SMS Key' for carrier SMS.`, isShutdown ? 'error' : 'success');
+      showAlert(`📱 Alert (${isShutdown ? 'OFF' : 'ON'}) sent to +91 ${userAlertPhone}! Click '📞 Twilio' or '🔑 Fast2SMS' for carrier SMS.`, isShutdown ? 'error' : 'success');
     }
   }
 }
@@ -884,9 +1085,19 @@ window.sendRealFast2Sms = sendRealFast2Sms;
 window.getFast2SmsApiKey = getFast2SmsApiKey;
 window.setFast2SmsApiKey = setFast2SmsApiKey;
 
+// Twilio window exports
+window.openTwilioModal = openTwilioModal;
+window.closeTwilioModal = closeTwilioModal;
+window.handleSaveTwilioConfig = handleSaveTwilioConfig;
+window.testRealTwilioSmsNow = testRealTwilioSmsNow;
+window.sendRealTwilioSms = sendRealTwilioSms;
+window.getTwilioConfig = getTwilioConfig;
+window.setTwilioConfig = setTwilioConfig;
+
 document.addEventListener('DOMContentLoaded', () => {
   renderOfficerDirectory();
   updateUserPhoneUI();
   updateFast2SmsUI();
+  updateTwilioUI();
 });
 

@@ -336,6 +336,9 @@
             <button type="submit" class="btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; width: auto; background: #10b981;">
               🔔 Set My Number
             </button>
+            <button type="button" class="btn-primary" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; width: auto; background: #e11d48;" onclick="openTwilioModal()">
+              📞 Twilio SMS <span id="twilioTabStatusBadge" style="display:none; font-size: 0.65rem; background: #10b981; color: #fff; padding: 1px 4px; border-radius: 4px; margin-left: 2px;">ON</span>
+            </button>
             <button type="button" class="btn-primary" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; width: auto; background: #8b5cf6;" onclick="openFast2SmsModal()">
               🔑 Fast2SMS Key
             </button>
@@ -910,6 +913,76 @@
             🔔 Test Ring Phone Now
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: TWILIO SMS GATEWAY CONFIGURATION -->
+  <div class="modal-backdrop" id="twilioModal">
+    <div class="modal-box" style="max-width: 540px;">
+      <div class="modal-header">
+        <h2 style="font-size: 1.15rem; color: #f43f5e; display: flex; align-items: center; gap: 0.5rem;">
+          <span>📞</span> Twilio Official SMS Gateway Setup
+        </h2>
+        <button style="background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;" onclick="closeTwilioModal()">✕</button>
+      </div>
+
+      <div style="font-size: 0.85rem; color: #e2e8f0; margin-top: 0.5rem;">
+        <div style="background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.35); border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1rem;">
+          <strong style="color: #fb7185;">📱 Delivery to Physical Mobile: +91 <span class="fast2sms-phone-display">9442218610</span></strong>
+          <p style="margin: 0.35rem 0 0 0; font-size: 0.78rem; line-height: 1.45; color: #cbd5e1;">
+            Booth <strong>OFF</strong> / <strong>ON</strong> aagum pothu Twilio global SMS infrastructure moolam direct carrier SMS unga mobile-ku varum!
+          </p>
+        </div>
+
+        <form onsubmit="handleSaveTwilioConfig(event)">
+          <div class="form-group" style="margin-bottom: 0.8rem;">
+            <label style="display: block; font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.25rem;">
+              Twilio Account SID (Starts with <code>AC...</code>): <span style="color:#ef4444;">*</span>
+            </label>
+            <input type="text" id="twilioAccountSidInput" placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" style="width: 100%; padding: 0.55rem 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(244, 63, 94, 0.5); border-radius: 6px; color: #fff; font-size: 0.85rem; outline: none; box-sizing: border-box;">
+            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 0.2rem;">
+              ℹ️ Twilio Console (<code>console.twilio.com</code>) dashboard-la "Account Info"-la irukkura <strong>Account SID</strong>.
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 0.8rem;">
+            <div>
+              <label style="display: block; font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.25rem;">API Key SID (SK...):</label>
+              <input type="text" id="twilioApiKeyInput" placeholder="SKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" style="width: 100%; padding: 0.55rem 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; color: #fff; font-size: 0.8rem; outline: none; box-sizing: border-box;">
+            </div>
+            <div>
+              <label style="display: block; font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.25rem;">API Client Secret:</label>
+              <input type="password" id="twilioSecretInput" placeholder="Enter API Secret" style="width: 100%; padding: 0.55rem 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; color: #fff; font-size: 0.8rem; outline: none; box-sizing: border-box;">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.25rem;">
+              Twilio Sender Phone Number (From): <span style="color:#ef4444;">*</span>
+            </label>
+            <input type="tel" id="twilioFromNumberInput" placeholder="+1xxxxxxxxxx" style="width: 100%; padding: 0.55rem 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(244, 63, 94, 0.5); border-radius: 6px; color: #fff; font-size: 0.85rem; outline: none; box-sizing: border-box;">
+            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 0.2rem;">
+              ℹ️ Unga Twilio Phone Number (Phone Numbers → Active Numbers section-la kedaikkum).
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 0.6rem;">
+            <span id="twilioCurrentStatus" style="font-size: 0.72rem; color: #f59e0b;">Status: Waiting for Account SID & From Number</span>
+          </div>
+
+          <div style="display: flex; gap: 0.6rem; justify-content: flex-end; flex-wrap: wrap;">
+            <button type="button" class="btn-secondary" onclick="closeTwilioModal()" style="width: auto; padding: 0.45rem 0.9rem; font-size: 0.8rem;">
+              Cancel
+            </button>
+            <button type="button" class="btn-secondary" onclick="testRealTwilioSmsNow()" style="width: auto; padding: 0.45rem 0.9rem; font-size: 0.8rem; background: #0284c7; color: #fff;">
+              📲 Send Test SMS
+            </button>
+            <button type="submit" class="btn-primary" style="width: auto; padding: 0.45rem 1.1rem; font-size: 0.8rem; background: #f43f5e;">
+              💾 Save Twilio Config
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
