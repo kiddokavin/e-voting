@@ -5,9 +5,9 @@ const DEFAULT_OFFICERS = {
   booth1: {
     id: 'booth1',
     boothName: 'Booth 1 (Red Zone)',
-    officerName: 'Thiru. R. Saravanan',
+    officerName: 'Thiru. L. Kavin',
     role: 'Presiding Officer (Booth 1)',
-    mobile: '+91 98401 23456',
+    mobile: '+91 9442218610',
     zone: 'Zone 1 (Red Zone)',
     vlan: 20,
     terminals: 'PC0, PC1',
@@ -19,7 +19,7 @@ const DEFAULT_OFFICERS = {
   booth2: {
     id: 'booth2',
     boothName: 'Booth 2 (Green Zone)',
-    officerName: 'Tmt. S. Meenakshi',
+    officerName: 'Thiru. Divagar T',
     role: 'Presiding Officer (Booth 2)',
     mobile: '+91 98402 34567',
     zone: 'Zone 2 (Green Zone)',
@@ -27,13 +27,13 @@ const DEFAULT_OFFICERS = {
     terminals: 'PC2, PC3',
     switchId: 'Switch 2',
     color: '#10b981',
-    avatar: '👩‍💼',
+    avatar: '👨‍💼',
     lastAlert: null
   },
   booth3: {
     id: 'booth3',
     boothName: 'Booth 3 (Pink Zone)',
-    officerName: 'Thiru. K. Vignesh',
+    officerName: 'Thiru. Abinesh G',
     role: 'Presiding Officer (Booth 3)',
     mobile: '+91 98403 45678',
     zone: 'Zone 3 (Pink Zone)',
@@ -50,7 +50,15 @@ let boothOfficers = Object.assign({}, DEFAULT_OFFICERS);
 try {
   const savedOfficers = localStorage.getItem('evoting_booth_officers');
   if (savedOfficers) {
-    boothOfficers = Object.assign({}, DEFAULT_OFFICERS, JSON.parse(savedOfficers));
+    const parsed = JSON.parse(savedOfficers);
+    // If old mock names were saved, update them to Kavin, Divagar T, Abinesh G
+    if (parsed.booth1 && parsed.booth1.officerName.includes('Saravanan')) {
+      localStorage.setItem('evoting_booth_officers', JSON.stringify(DEFAULT_OFFICERS));
+    } else {
+      boothOfficers = Object.assign({}, DEFAULT_OFFICERS, parsed);
+    }
+  } else {
+    localStorage.setItem('evoting_booth_officers', JSON.stringify(DEFAULT_OFFICERS));
   }
 } catch (e) {
   console.error('[Officer Store Error]', e);
@@ -403,9 +411,11 @@ function openEditOfficerModal(boothId) {
 }
 
 // User Personal Mobile Number Alert Manager
-let userAlertPhone = '';
+let userAlertPhone = '9442218610';
 try {
-  userAlertPhone = localStorage.getItem('evoting_user_alert_phone') || '';
+  const saved = localStorage.getItem('evoting_user_alert_phone');
+  if (saved) userAlertPhone = saved;
+  else localStorage.setItem('evoting_user_alert_phone', '9442218610');
 } catch (e) {}
 
 function getUserPersonalPhone() {
