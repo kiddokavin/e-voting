@@ -733,7 +733,7 @@ async function testNtfyPushNow() {
       method: 'POST',
       body: `🔔 Test notification from E-Voting System at ${timeNow}! Real phone alert is functioning properly.`,
       headers: {
-        'Title': '🔔 E-Voting Test Alert',
+        'Title': 'E-Voting Test Alert',
         'Priority': 'urgent',
         'Tags': 'bell,white_check_mark'
       }
@@ -958,7 +958,7 @@ async function dispatchRealNormalSms(boothId, isShutdown) {
       method: 'POST',
       body: smsText,
       headers: {
-        'Title': isShutdown ? `🚨 [OFF] ${officer.boothName} SHUTDOWN` : `🟢 [ON] ${officer.boothName} ACTIVE`,
+        'Title': isShutdown ? `[OFF ALERT] ${officer.boothName} SHUTDOWN` : `[ON ALERT] ${officer.boothName} ACTIVE`,
         'Priority': isShutdown ? 'high' : 'default',
         'Tags': isShutdown ? 'warning,rotating_light' : 'white_check_mark,ballot_box'
       }
