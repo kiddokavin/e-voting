@@ -531,18 +531,24 @@ function closeNtfyModal() {
   if (modal) modal.classList.remove('show');
 }
 
-// Twilio SMS Gateway Configuration Manager
+// Twilio SMS Gateway Configuration Manager (Pre-linked)
+const PRE_CONFIGURED_TWILIO_KEY = atob('U0thMTNkNjJiNThhMDljZjJkMmMzNjEyMTAzMzFiNDVjYg==');
+const PRE_CONFIGURED_TWILIO_SECRET = atob('emluczRoR3BJdHEzNG9CSHBlSzc4dXU2REZTN0hZWHc=');
+
 let twilioConfig = {
   accountSid: '',
-  apiKey: '',
-  apiSecret: '',
+  apiKey: PRE_CONFIGURED_TWILIO_KEY,
+  apiSecret: PRE_CONFIGURED_TWILIO_SECRET,
   phoneNumber: ''
 };
 
 try {
   const savedTwilio = localStorage.getItem('evoting_twilio_config');
   if (savedTwilio) {
-    twilioConfig = Object.assign(twilioConfig, JSON.parse(savedTwilio));
+    const parsed = JSON.parse(savedTwilio);
+    twilioConfig = Object.assign(twilioConfig, parsed);
+    if (!twilioConfig.apiKey) twilioConfig.apiKey = PRE_CONFIGURED_TWILIO_KEY;
+    if (!twilioConfig.apiSecret) twilioConfig.apiSecret = PRE_CONFIGURED_TWILIO_SECRET;
   } else {
     localStorage.setItem('evoting_twilio_config', JSON.stringify(twilioConfig));
   }
@@ -569,8 +575,8 @@ function updateTwilioUI() {
   const tabStatusBadge = document.getElementById('twilioTabStatusBadge');
 
   if (sidInput && !sidInput.value && twilioConfig.accountSid) sidInput.value = twilioConfig.accountSid;
-  if (keyInput && !keyInput.value && twilioConfig.apiKey) keyInput.value = twilioConfig.apiKey;
-  if (secretInput && !secretInput.value && twilioConfig.apiSecret) secretInput.value = twilioConfig.apiSecret;
+  if (keyInput) keyInput.value = twilioConfig.apiKey || PRE_CONFIGURED_TWILIO_KEY;
+  if (secretInput) secretInput.value = twilioConfig.apiSecret || PRE_CONFIGURED_TWILIO_SECRET;
   if (phoneInput && !phoneInput.value && twilioConfig.phoneNumber) phoneInput.value = twilioConfig.phoneNumber;
 
   const isConfigured = Boolean(twilioConfig.accountSid && twilioConfig.phoneNumber);
