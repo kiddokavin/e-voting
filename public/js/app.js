@@ -71,6 +71,8 @@ function switchTab(tabId) {
       if (typeof resizeCanvas === 'function') resizeCanvas();
       if (typeof drawTopology === 'function') drawTopology();
     }, 50);
+  } else if (tabId === 'admin') {
+    if (typeof renderOfficerDirectory === 'function') renderOfficerDirectory();
   }
 }
 

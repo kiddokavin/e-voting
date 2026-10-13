@@ -166,6 +166,11 @@ function toggleBoothPower(boothId) {
     }
   }
 
+  // Dispatch Emergency SMS to Booth Agent Officer & show smartphone simulator
+  if (typeof triggerOfficerMobileAlert === 'function') {
+    triggerOfficerMobileAlert(boothId, newStatus ? 'ON' : 'OFF');
+  }
+
   if (typeof drawTopology === 'function') drawTopology();
   if (typeof fetchMonitoringStats === 'function') fetchMonitoringStats();
   if (typeof updateTerminalInfo === 'function') updateTerminalInfo();

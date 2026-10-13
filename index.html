@@ -309,6 +309,11 @@
                 🔴 Turn OFF
               </button>
             </div>
+
+            <!-- Quick Open Officer Smartphone Simulator Button -->
+            <button onclick="openPhoneAlertModal()" style="display: flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.75rem; font-size: 0.75rem; border-radius: 8px; cursor: pointer; font-weight: bold; background: #3b82f6; color: #fff; border: 1px solid #60a5fa; box-shadow: 0 0 10px rgba(59,130,246,0.3); transition: all 0.2s;">
+              📱 Officer Phone Simulator
+            </button>
           </div>
         </div>
 
@@ -585,6 +590,24 @@
               </div>
             </div>
           </div>
+
+          <!-- Polling Booth Agent Officers & Emergency Mobile Alert Directory -->
+          <div style="background: rgba(255,255,255,0.03); padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border-color); margin-top: 1.2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+              <h3 style="font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span>📱</span> Polling Booth Agent Officers & Emergency Mobile SMS Directory
+              </h3>
+              <button class="btn-primary" style="padding: 0.3rem 0.75rem; font-size: 0.78rem; width: auto; background: #3b82f6;" onclick="openPhoneAlertModal()">
+                📱 Open Smartphone Simulator
+              </button>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
+              Centralized GSM SMS gateway transmission directory. When any booth interface is shut down, automated emergency SMS alerts are dispatched to the designated Polling Station Officer's mobile phone.
+            </p>
+            <div id="officerDirectoryList" style="display: flex; flex-direction: column; gap: 0.8rem;">
+              <!-- Populated dynamically by js/mobile_alert.js -->
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -671,9 +694,99 @@
     </div>
   </div>
 
+
+  <!-- MODAL: BOOTH OFFICER SMARTPHONE SMS NOTIFICATION SIMULATOR -->
+  <div class="phone-modal-backdrop" id="phoneAlertModal">
+    <div class="smartphone-frame" id="smartphoneFrame">
+      
+      <!-- Top Speaker & Dynamic Island -->
+      <div class="phone-dynamic-island">
+        <div class="phone-camera-lens"></div>
+        <div class="phone-sensor-light"></div>
+      </div>
+
+      <!-- Phone Status Bar -->
+      <div class="phone-top-bar">
+        <span id="phoneClockDisplay">10:25</span>
+        <div style="display: flex; align-items: center; gap: 6px; font-size: 0.72rem;">
+          <span>5G</span>
+          <span>📶</span>
+          <span>🔋 98%</span>
+        </div>
+      </div>
+
+      <!-- Sliding Push Notification Banner -->
+      <div class="phone-notification-banner" id="phoneNotificationBanner">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 0.95rem;">💬</span>
+            <span style="font-size: 0.7rem; font-weight: bold; color: #f87171;">MESSAGES • Just Now</span>
+          </div>
+          <span style="font-size: 0.65rem; color: #94a3b8;" id="phoneBannerTime">10:25 AM</span>
+        </div>
+        <div style="font-size: 0.76rem; font-weight: bold; color: #fff; margin-bottom: 2px;">
+          🚨 E-VOTE-ALERT (Cisco Core Gateway)
+        </div>
+        <div style="font-size: 0.72rem; color: #cbd5e1; line-height: 1.3;" id="phoneBannerPreviewText">
+          ⚠️ Booth network interface administratively SHUT DOWN!
+        </div>
+      </div>
+
+      <!-- Phone Screen Officer Contact Header -->
+      <div class="phone-contact-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div id="phoneOfficerAvatar" style="font-size: 1.4rem; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2);">
+            👨‍💼
+          </div>
+          <div>
+            <div style="font-weight: bold; font-size: 0.82rem; color: #f8fafc; display: flex; align-items: center; gap: 6px;">
+              <span id="phoneOfficerName">Thiru. R. Saravanan</span>
+              <span id="phoneBoothPill" style="font-size: 0.64rem; padding: 1px 6px; border-radius: 4px; border: 1px solid #ef4444; color: #ef4444; background: rgba(239,68,68,0.2);">Booth 1</span>
+            </div>
+            <div style="font-size: 0.68rem; color: #94a3b8;">
+              <span id="phoneOfficerPhone">+91 98401 23456</span> • <span style="color: #10b981;">● Online (GSM)</span>
+            </div>
+          </div>
+        </div>
+        <button style="background: rgba(255,255,255,0.12); border: none; color: #fff; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.85rem;" onclick="closePhoneAlertModal()">
+          ✕
+        </button>
+      </div>
+
+      <!-- SMS Conversation Stream -->
+      <div class="phone-message-stream" id="phoneMessageStream">
+        <!-- Messages rendered dynamically -->
+      </div>
+
+      <!-- Officer Switcher Tabs & Bottom Controls -->
+      <div class="phone-bottom-bar">
+        <div style="display: flex; gap: 6px; width: 100%; justify-content: center;">
+          <button id="phoneTab_booth1" onclick="switchPhoneOfficer('booth1')" style="flex: 1; padding: 6px 4px; font-size: 0.7rem; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; background: #3b82f6; color: #fff; transition: all 0.2s;">
+            Booth 1 Phone
+          </button>
+          <button id="phoneTab_booth2" onclick="switchPhoneOfficer('booth2')" style="flex: 1; padding: 6px 4px; font-size: 0.7rem; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; background: rgba(255,255,255,0.08); color: #94a3b8; transition: all 0.2s;">
+            Booth 2 Phone
+          </button>
+          <button id="phoneTab_booth3" onclick="switchPhoneOfficer('booth3')" style="flex: 1; padding: 6px 4px; font-size: 0.7rem; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; background: rgba(255,255,255,0.08); color: #94a3b8; transition: all 0.2s;">
+            Booth 3 Phone
+          </button>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0 4px;">
+          <span style="font-size: 0.65rem; color: #64748b;">Govt Centralized GSM Gateway</span>
+          <button onclick="closePhoneAlertModal()" style="background: transparent; border: none; color: #60a5fa; font-size: 0.72rem; cursor: pointer; font-weight: bold;">
+            Close Phone
+          </button>
+        </div>
+        <div class="phone-home-indicator"></div>
+      </div>
+
+    </div>
+  </div>
+
   <script src="js/api.js"></script>
   <script src="js/app.js"></script>
   <script src="js/topology.js"></script>
+  <script src="js/mobile_alert.js"></script>
   <script src="js/voting.js"></script>
   <script src="js/dashboard.js"></script>
 </body>
