@@ -118,13 +118,13 @@ function triggerOfficerMobileAlert(boothId, actionState = 'OFF') {
 
   let alertTitle, alertBody, bannerPreview;
   if (isShutdown) {
-    alertTitle = `🚨 CRITICAL SECURITY ALERT: ${officer.boothName.toUpperCase()} SHUT DOWN`;
-    alertBody = `URGENT NOTICE [EVAL-SEC-01]: Polling Booth (${officer.boothName} / VLAN ${officer.vlan}) network interface administratively SHUT DOWN by Router0 at ${timeStr}. Terminals ${officer.terminals} are OFFLINE. Voting suspended. Please inspect booth immediately!`;
-    bannerPreview = `⚠️ SHUTDOWN ALERT: ${officer.boothName} interface administratively disabled!`;
+    alertTitle = `🚨 [E-VOTE ALERT] ${officer.boothName.toUpperCase()} IS OFF`;
+    alertBody = `⚠️ URGENT: ${officer.boothName} IS OFF! Network interface administratively SHUT DOWN by Router0 at ${timeStr}. Polling Terminals ${officer.terminals} are OFFLINE. Voting suspended. Please inspect booth immediately.`;
+    bannerPreview = `🚨 OFF ALERT: ${officer.boothName} IS OFF (SHUTDOWN)`;
   } else {
-    alertTitle = `🟢 RESTORATION NOTICE: ${officer.boothName.toUpperCase()} POWERED ON`;
-    alertBody = `STATUS UPDATE [EVAL-NET-02]: Polling Booth (${officer.boothName} / VLAN ${officer.vlan}) network interface restored to active state (no shutdown) at ${timeStr}. Terminals ${officer.terminals} are ONLINE. Voting resumed.`;
-    bannerPreview = `✅ RESTORED: ${officer.boothName} interface back online.`;
+    alertTitle = `🟢 [E-VOTE ALERT] ${officer.boothName.toUpperCase()} IS ON`;
+    alertBody = `✅ RESTORED: ${officer.boothName} IS ON! Network interface restored to ACTIVE state at ${timeStr}. Polling Terminals ${officer.terminals} are ONLINE. Voting resumed.`;
+    bannerPreview = `🟢 ON ALERT: ${officer.boothName} IS ON (ACTIVE)`;
   }
 
   const messageRecord = {
@@ -214,9 +214,11 @@ function renderSmartphoneView(boothId, latestMessage = null, bannerPreview = nul
   const bannerTimeEl = document.getElementById('phoneBannerTime');
 
   if (bannerEl && bannerTextEl) {
-    bannerTextEl.textContent = bannerPreview || `Alert received from E-Voting Command Gateway`;
+    const isShutdown = (latestMessage ? latestMessage.isShutdown : !(typeof isBoothOnline === 'function' ? isBoothOnline(boothId) : true));
+    bannerTextEl.textContent = bannerPreview || (isShutdown ? `🚨 OFF: ${officer.boothName} IS TURNED OFF!` : `🟢 ON: ${officer.boothName} IS TURNED ON!`);
     if (bannerTimeEl) bannerTimeEl.textContent = timeFormatted;
     bannerEl.style.display = 'block';
+    bannerEl.style.borderColor = isShutdown ? 'rgba(239, 68, 68, 0.7)' : 'rgba(16, 185, 129, 0.7)';
 
     // Trigger subtle vibration animation
     const phoneFrame = document.getElementById('smartphoneFrame');
@@ -224,6 +226,23 @@ function renderSmartphoneView(boothId, latestMessage = null, bannerPreview = nul
       phoneFrame.classList.remove('vibrating');
       void phoneFrame.offsetWidth; // trigger reflow
       phoneFrame.classList.add('vibrating');
+    }
+  }
+
+  // Update Direct SMS button on bottom bar
+  const directSmsBtn = document.getElementById('phoneDirectSmsBtn');
+  if (directSmsBtn) {
+    const isOnline = (typeof isBoothOnline === 'function') ? isBoothOnline(boothId) : true;
+    if (!isOnline) {
+      directSmsBtn.innerHTML = `<span>📨</span> Send "OFF" SMS to +91 ${userAlertPhone} (Open Messages App)`;
+      directSmsBtn.style.color = '#ef4444';
+      directSmsBtn.style.borderColor = '#ef4444';
+      directSmsBtn.style.background = 'rgba(239, 68, 68, 0.15)';
+    } else {
+      directSmsBtn.innerHTML = `<span>📨</span> Send "ON" SMS to +91 ${userAlertPhone} (Open Messages App)`;
+      directSmsBtn.style.color = '#10b981';
+      directSmsBtn.style.borderColor = '#10b981';
+      directSmsBtn.style.background = 'rgba(16, 185, 129, 0.15)';
     }
   }
 
@@ -498,15 +517,15 @@ async function dispatchRealNormalSms(boothId, isShutdown) {
 
   let smsText;
   if (isShutdown) {
-    smsText = `[GOVT E-VOTING ALERT] CRITICAL: ${officer.boothName} interface administratively SHUT DOWN by Router0 at ${timeNow}. EVM terminals OFFLINE. Voting suspended! Please inspect immediately.`;
+    smsText = `[GOVT E-VOTING ALERT] ${officer.boothName.toUpperCase()} IS OFF! Interface SHUT DOWN by Router0 at ${timeNow}. EVM terminals OFFLINE.`;
   } else {
-    smsText = `[GOVT E-VOTING INFO] RESOLVED: ${officer.boothName} interface restored to ONLINE state at ${timeNow}. EVM terminals active.`;
+    smsText = `[GOVT E-VOTING INFO] ${officer.boothName.toUpperCase()} IS ON! Interface RESTORED at ${timeNow}. EVM terminals ONLINE.`;
   }
 
   // 1. Trigger Native System Web Notification (If supported & permitted)
   if ('Notification' in window && Notification.permission === 'granted') {
     try {
-      new Notification(isShutdown ? '🚨 E-VOTING CRITICAL SHUTDOWN' : '🟢 E-VOTING RESTORED', {
+      new Notification(isShutdown ? '🚨 E-VOTING BOOTH IS OFF' : '🟢 E-VOTING BOOTH IS ON', {
         body: smsText,
         icon: '🗳️',
         vibrate: [200, 100, 200]
@@ -541,13 +560,13 @@ async function dispatchRealNormalSms(boothId, isShutdown) {
       timestamp: new Date().toISOString(),
       type: isShutdown ? 'SECURITY_ALERT' : 'NETWORK',
       sourceIp: '192.168.1.1',
-      message: `GSM_GATEWAY: Normal SMS text alert dispatched to User Personal Phone +91 ${userAlertPhone} (${officer.boothName})`,
+      message: `GSM_GATEWAY: Normal SMS alert (${isShutdown ? 'OFF' : 'ON'}) dispatched to User Personal Phone +91 ${userAlertPhone} (${officer.boothName})`,
       hash: '0x' + Math.random().toString(16).substring(2, 10)
     });
   }
 
   if (typeof showAlert === 'function') {
-    showAlert(`📱 Normal SMS alert sent to your phone (+91 ${userAlertPhone})!`, 'info');
+    showAlert(`📱 Normal SMS alert (${isShutdown ? 'OFF' : 'ON'}) sent to your phone (+91 ${userAlertPhone})!`, isShutdown ? 'error' : 'success');
   }
 }
 
@@ -559,11 +578,18 @@ function openDeviceSmsApp(boothId = 'booth1') {
     setUserPersonalPhone(input);
   }
 
+  const isOnline = (typeof isBoothOnline === 'function') ? isBoothOnline(boothId) : true;
   const officer = boothOfficers[boothId] || { boothName: 'Booth 1', vlan: 20 };
   const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const smsBody = `[GOVT E-VOTING ALERT] CRITICAL: ${officer.boothName} interface SHUT DOWN by Router0 at ${timeNow}. EVM terminals OFFLINE. Immediate action required.`;
-  const smsUri = `sms:+91${userAlertPhone}?body=${encodeURIComponent(smsBody)}`;
 
+  let smsBody;
+  if (!isOnline) {
+    smsBody = `[GOVT E-VOTING ALERT] ${officer.boothName.toUpperCase()} IS OFF! Network interface administratively SHUT DOWN by Router0 at ${timeNow}. EVM terminals OFFLINE.`;
+  } else {
+    smsBody = `[GOVT E-VOTING INFO] ${officer.boothName.toUpperCase()} IS ON! Network interface restored to ACTIVE state at ${timeNow}. EVM terminals ONLINE.`;
+  }
+
+  const smsUri = `sms:+91${userAlertPhone}?body=${encodeURIComponent(smsBody)}`;
   window.open(smsUri, '_blank');
 }
 
