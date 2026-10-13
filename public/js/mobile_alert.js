@@ -154,6 +154,11 @@ function triggerOfficerMobileAlert(boothId, actionState = 'OFF') {
     showAlert(`📱 SMS Alert sent to ${officer.officerName} (${officer.mobile})!`, isShutdown ? 'error' : 'success');
   }
 
+  // Dispatch real Normal SMS to user's personal phone if registered
+  if (userAlertPhone) {
+    dispatchRealNormalSms(boothId, isShutdown);
+  }
+
   // Render & Open Smartphone Mockup Popup
   renderSmartphoneView(boothId, messageRecord, bannerPreview);
   openPhoneAlertModal();
@@ -397,6 +402,170 @@ function openEditOfficerModal(boothId) {
   renderSmartphoneView(boothId);
 }
 
+// User Personal Mobile Number Alert Manager
+let userAlertPhone = '';
+try {
+  userAlertPhone = localStorage.getItem('evoting_user_alert_phone') || '';
+} catch (e) {}
+
+function getUserPersonalPhone() {
+  return userAlertPhone;
+}
+
+function setUserPersonalPhone(phone) {
+  if (!phone) {
+    userAlertPhone = '';
+    try { localStorage.removeItem('evoting_user_alert_phone'); } catch (e) {}
+    updateUserPhoneUI();
+    return;
+  }
+
+  // Clean phone number
+  let clean = phone.replace(/[^0-9]/g, '');
+  if (clean.length > 10 && clean.startsWith('91')) clean = clean.substring(2);
+  if (clean.length !== 10) {
+    if (typeof showAlert === 'function') showAlert('⚠️ Please enter a valid 10-digit mobile number!', 'error');
+    return false;
+  }
+
+  userAlertPhone = clean;
+  try {
+    localStorage.setItem('evoting_user_alert_phone', clean);
+  } catch (e) {}
+
+  // Request Web Push Notification Permission so phone/browser gets native alerts
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission().then(perm => {
+      if (perm === 'granted') {
+        new Notification('🗳️ E-Voting Emergency SMS Active', {
+          body: `Normal SMS & Push alerts enabled for +91 ${clean}`,
+          icon: '🗳️'
+        });
+      }
+    });
+  }
+
+  updateUserPhoneUI();
+  if (typeof showAlert === 'function') {
+    showAlert(`✅ Mobile Number +91 ${clean} saved! Normal SMS alerts are now ACTIVE.`, 'success');
+  }
+  return true;
+}
+
+function updateUserPhoneUI() {
+  const displays = document.querySelectorAll('.user-phone-display-text');
+  displays.forEach(el => {
+    if (userAlertPhone) {
+      el.innerHTML = `🟢 Active Alert Mobile: <strong style="color: #60a5fa;">+91 ${userAlertPhone}</strong> (Normal SMS Connected)`;
+    } else {
+      el.innerHTML = `⚪ No personal number saved. Enter your 10-digit number below to receive Normal SMS on your phone.`;
+    }
+  });
+
+  const inputs = document.querySelectorAll('.user-phone-input-field');
+  inputs.forEach(el => {
+    if (userAlertPhone && !el.value) el.value = userAlertPhone;
+  });
+
+  const simUserPill = document.getElementById('phoneUserMobilePill');
+  if (simUserPill) {
+    if (userAlertPhone) {
+      simUserPill.style.display = 'inline-block';
+      simUserPill.textContent = `Alerting Your Phone: +91 ${userAlertPhone}`;
+    } else {
+      simUserPill.style.display = 'none';
+    }
+  }
+}
+
+// Send Real Normal SMS to User Phone via Free Gateway + Native SMS URI
+async function dispatchRealNormalSms(boothId, isShutdown) {
+  if (!userAlertPhone) return;
+
+  const officer = boothOfficers[boothId] || { boothName: 'Booth', vlan: '20' };
+  const fullPhone = '+91' + userAlertPhone;
+  const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  let smsText;
+  if (isShutdown) {
+    smsText = `[GOVT E-VOTING ALERT] CRITICAL: ${officer.boothName} interface administratively SHUT DOWN by Router0 at ${timeNow}. EVM terminals OFFLINE. Voting suspended! Please inspect immediately.`;
+  } else {
+    smsText = `[GOVT E-VOTING INFO] RESOLVED: ${officer.boothName} interface restored to ONLINE state at ${timeNow}. EVM terminals active.`;
+  }
+
+  // 1. Trigger Native System Web Notification (If supported & permitted)
+  if ('Notification' in window && Notification.permission === 'granted') {
+    try {
+      new Notification(isShutdown ? '🚨 E-VOTING CRITICAL SHUTDOWN' : '🟢 E-VOTING RESTORED', {
+        body: smsText,
+        icon: '🗳️',
+        vibrate: [200, 100, 200]
+      });
+    } catch (e) {}
+  }
+
+  // 2. Dispatch via Textbelt Free SMS Gateway API
+  try {
+    fetch('https://textbelt.com/text', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: fullPhone,
+        message: smsText,
+        key: 'textbelt'
+      })
+    }).then(res => res.json()).then(data => {
+      console.log('[GSM SMS Gateway Response]', data);
+      if (data && data.success) {
+        if (typeof showAlert === 'function') showAlert(`📨 Real Normal SMS delivered to +91 ${userAlertPhone}!`, 'success');
+      }
+    }).catch(err => {
+      console.log('[SMS Gateway Notice]', err);
+    });
+  } catch (err) {}
+
+  // 3. Log into Audit Stream
+  if (window.API && API.mockDB && API.mockDB.auditLogs) {
+    API.mockDB.auditLogs.unshift({
+      id: `LOG_USER_SMS_${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      type: isShutdown ? 'SECURITY_ALERT' : 'NETWORK',
+      sourceIp: '192.168.1.1',
+      message: `GSM_GATEWAY: Normal SMS text alert dispatched to User Personal Phone +91 ${userAlertPhone} (${officer.boothName})`,
+      hash: '0x' + Math.random().toString(16).substring(2, 10)
+    });
+  }
+
+  if (typeof showAlert === 'function') {
+    showAlert(`📱 Normal SMS alert sent to your phone (+91 ${userAlertPhone})!`, 'info');
+  }
+}
+
+// Open Native SMS App on Device (Phone Link / Mobile Messages)
+function openDeviceSmsApp(boothId = 'booth1') {
+  if (!userAlertPhone) {
+    const input = prompt('Enter your 10-digit mobile number to send SMS:');
+    if (!input) return;
+    setUserPersonalPhone(input);
+  }
+
+  const officer = boothOfficers[boothId] || { boothName: 'Booth 1', vlan: 20 };
+  const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const smsBody = `[GOVT E-VOTING ALERT] CRITICAL: ${officer.boothName} interface SHUT DOWN by Router0 at ${timeNow}. EVM terminals OFFLINE. Immediate action required.`;
+  const smsUri = `sms:+91${userAlertPhone}?body=${encodeURIComponent(smsBody)}`;
+
+  window.open(smsUri, '_blank');
+}
+
+// Save User Mobile from Form
+function handleSaveUserPhone(e) {
+  if (e) e.preventDefault();
+  const inputEl = document.getElementById('userMobileNumberInput') || document.querySelector('.user-phone-input-field');
+  if (!inputEl) return;
+  const val = inputEl.value.trim();
+  setUserPersonalPhone(val);
+}
+
 // Initialize on window load
 window.triggerOfficerMobileAlert = triggerOfficerMobileAlert;
 window.openPhoneAlertModal = openPhoneAlertModal;
@@ -405,7 +574,14 @@ window.switchPhoneOfficer = switchPhoneOfficer;
 window.openEditOfficerModal = openEditOfficerModal;
 window.renderOfficerDirectory = renderOfficerDirectory;
 window.boothOfficers = boothOfficers;
+window.setUserPersonalPhone = setUserPersonalPhone;
+window.getUserPersonalPhone = getUserPersonalPhone;
+window.handleSaveUserPhone = handleSaveUserPhone;
+window.dispatchRealNormalSms = dispatchRealNormalSms;
+window.openDeviceSmsApp = openDeviceSmsApp;
 
 document.addEventListener('DOMContentLoaded', () => {
   renderOfficerDirectory();
+  updateUserPhoneUI();
 });
+

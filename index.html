@@ -317,6 +317,31 @@
           </div>
         </div>
 
+        <!-- Personal Mobile Normal SMS Gateway Connector -->
+        <div style="margin: 0 1rem 0.8rem 1rem; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 10px; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem;">
+          <div>
+            <div style="font-size: 0.88rem; font-weight: bold; color: #60a5fa; display: flex; align-items: center; gap: 0.4rem;">
+              <span>📲</span> Receive Real Normal SMS On Your Mobile Phone:
+            </div>
+            <div class="user-phone-display-text" style="font-size: 0.74rem; color: var(--text-muted); margin-top: 0.15rem;">
+              Enter your 10-digit phone number. When any booth is turned OFF, an instant Normal SMS alert will be dispatched to your phone!
+            </div>
+          </div>
+
+          <form onsubmit="handleSaveUserPhone(event)" style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); border-radius: 6px; padding: 0 0.5rem;">
+              <span style="font-size: 0.75rem; color: #94a3b8; font-weight: bold; margin-right: 0.3rem;">🇮🇳 +91</span>
+              <input type="tel" id="userMobileNumberInput" class="user-phone-input-field" placeholder="10-digit mobile" maxlength="10" style="background: transparent; border: none; color: #fff; font-size: 0.78rem; width: 110px; padding: 0.3rem 0; outline: none;">
+            </div>
+            <button type="submit" class="btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; width: auto; background: #10b981;">
+              🔔 Set My Number
+            </button>
+            <button type="button" class="btn-secondary" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; width: auto; background: rgba(255,255,255,0.08);" onclick="openDeviceSmsApp('booth1')">
+              📨 Open SMS
+            </button>
+          </form>
+        </div>
+
         <!-- Live Cisco Packet Tracer Working Model Canvas Visualizer -->
         <div class="topology-container">
           <canvas id="topologyCanvas"></canvas>
@@ -771,6 +796,9 @@
             Booth 3 Phone
           </button>
         </div>
+        <button onclick="openDeviceSmsApp(currentViewingBoothId)" style="width: 100%; padding: 7px 10px; font-size: 0.73rem; border-radius: 8px; border: 1px solid #10b981; cursor: pointer; font-weight: bold; background: rgba(16, 185, 129, 0.15); color: #10b981; display: flex; align-items: center; justify-content: center; gap: 0.4rem; transition: all 0.2s;">
+          <span>📨</span> Send Normal SMS to My Mobile (Open Messages App)
+        </button>
         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0 4px;">
           <span style="font-size: 0.65rem; color: #64748b;">Govt Centralized GSM Gateway</span>
           <button onclick="closePhoneAlertModal()" style="background: transparent; border: none; color: #60a5fa; font-size: 0.72rem; cursor: pointer; font-weight: bold;">
