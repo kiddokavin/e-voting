@@ -910,6 +910,17 @@ function parseDevicePercent(coordStr, totalSize) {
   return (num / 100) * totalSize;
 }
 
+// Packet Animation Speed Multiplier (Default 2x Fast)
+let ciscoAnimationMultiplier = 2;
+
+function setCiscoAnimationSpeed(val) {
+  ciscoAnimationMultiplier = parseFloat(val) || 2;
+  const select = document.getElementById('packetSpeedSelect');
+  if (select) select.value = String(ciscoAnimationMultiplier);
+  if (typeof showAlert === 'function') showAlert(`⚡ Packet animation speed set to ${ciscoAnimationMultiplier}x!`, 'info');
+}
+window.setCiscoAnimationSpeed = setCiscoAnimationSpeed;
+
 function animateCiscoDiagramPacket(srcDev, tgtDev, color = '#3b82f6', isFail = false) {
   initCiscoOverlayCanvas();
   if (!overlayCanvas || !overlayCtx) return;
@@ -938,6 +949,10 @@ function animateCiscoDiagramPacket(srcDev, tgtDev, color = '#3b82f6', isFail = f
     pts.push({ x: parseDevicePercent(coreSw.left, w), y: parseDevicePercent(coreSw.top, h) });
   }
 
+  // Ultra-Smooth & Fast Packet Progress Calculation
+  const baseSpeed = 0.16 * ciscoAnimationMultiplier;
+  const stepDelay = Math.max(40, Math.round(90 / ciscoAnimationMultiplier));
+
   // Create segments for forward packet
   for (let i = 0; i < pts.length - 1; i++) {
     setTimeout(() => {
@@ -949,16 +964,16 @@ function animateCiscoDiagramPacket(srcDev, tgtDev, color = '#3b82f6', isFail = f
         currentX: pts[i].x,
         currentY: pts[i].y,
         progress: 0,
-        speed: 0.08,
+        speed: baseSpeed,
         color: color,
         isDrop: (isFail && i === pts.length - 2)
       });
-    }, i * 180);
+    }, i * stepDelay);
   }
 
   // Create echo reply return packet if successful
   if (!isFail) {
-    const returnDelay = pts.length * 180 + 100;
+    const returnDelay = (pts.length - 1) * stepDelay + 60;
     setTimeout(() => {
       for (let i = pts.length - 1; i > 0; i--) {
         setTimeout(() => {
@@ -970,11 +985,11 @@ function animateCiscoDiagramPacket(srcDev, tgtDev, color = '#3b82f6', isFail = f
             currentX: pts[i].x,
             currentY: pts[i].y,
             progress: 0,
-            speed: 0.08,
+            speed: baseSpeed,
             color: '#10b981',
             isDrop: false
           });
-        }, (pts.length - 1 - i) * 180);
+        }, (pts.length - 1 - i) * stepDelay);
       }
     }, returnDelay);
   }
