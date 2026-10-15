@@ -421,6 +421,7 @@ function initTopologyCanvas() {
 
   function animLoop() {
     updatePackets();
+    updateCiscoOverlayPackets();
     drawTopology();
     requestAnimationFrame(animLoop);
   }
@@ -609,6 +610,10 @@ function executeRouterPing(srcParam, tgtParam, forceFail = false) {
       `;
     }
 
+    const ciscoSrc = ciscoDevices.find(d => d.id === srcNode.id || d.name === srcNode.name) || { left: '13%', top: '66.5%', zone: 'BOOTH 1' };
+    const ciscoTgt = ciscoDevices.find(d => d.id === tgtNode.id || d.name === tgtNode.name) || { left: '73.2%', top: '11.5%', zone: 'DMZ' };
+    animateCiscoDiagramPacket(ciscoSrc, ciscoTgt, '#ef4444', true);
+
     animatePacketRoute(failPath, '#ef4444', 0.35, 20);
 
     updateDetailBox(`
@@ -648,7 +653,12 @@ function executeRouterPing(srcParam, tgtParam, forceFail = false) {
   if (srcSwitch !== srcNode.id) replyPath.push(srcSwitch);
   replyPath.push(srcNode.id);
 
-  // Lightning Ultra-Fast Packet Animation (0.35 speed, 20ms hop delay)
+  // Trigger Animation on Real Cisco Diagram Overlay
+  const ciscoSrc = ciscoDevices.find(d => d.id === srcNode.id || d.name === srcNode.name) || { left: '13%', top: '66.5%', zone: 'BOOTH 1' };
+  const ciscoTgt = ciscoDevices.find(d => d.id === tgtNode.id || d.name === tgtNode.name) || { left: '73.2%', top: '11.5%', zone: 'DMZ' };
+  animateCiscoDiagramPacket(ciscoSrc, ciscoTgt, '#3b82f6', false);
+
+  // Lightning Ultra-Fast Packet Animation for schematic canvas
   animatePacketRoute(requestPath, '#3b82f6', 0.35, 20);
 
   setTimeout(() => {
@@ -877,6 +887,163 @@ function drawLinkLed(x1, y1, x2, y2, isDown = false) {
   ctx.strokeStyle = isDown ? '#b91c1c' : '#059669';
   ctx.lineWidth = 1;
   ctx.stroke();
+}
+
+// Packet Animation on Overlay Canvas for the Cisco Working Model Diagram
+let overlayCanvas, overlayCtx;
+let activeCiscoPackets = [];
+
+function initCiscoOverlayCanvas() {
+  overlayCanvas = document.getElementById('ciscoPacketOverlayCanvas');
+  const imgWrapper = document.getElementById('ciscoImgWrapper');
+  if (!overlayCanvas || !imgWrapper) return;
+
+  const w = imgWrapper.clientWidth || 1000;
+  const h = imgWrapper.clientHeight || 700;
+  overlayCanvas.width = w;
+  overlayCanvas.height = h;
+  overlayCtx = overlayCanvas.getContext('2d');
+}
+
+function parseDevicePercent(coordStr, totalSize) {
+  const num = parseFloat(coordStr);
+  return (num / 100) * totalSize;
+}
+
+function animateCiscoDiagramPacket(srcDev, tgtDev, color = '#3b82f6', isFail = false) {
+  initCiscoOverlayCanvas();
+  if (!overlayCanvas || !overlayCtx) return;
+
+  const w = overlayCanvas.width;
+  const h = overlayCanvas.height;
+
+  // Intermediate Cisco Gateways in architecture
+  const coreSw = ciscoDevices.find(d => d.id === 'core_sw_active') || { left: '38%', top: '40.8%' };
+  const hsrpRtr = ciscoDevices.find(d => d.id === 'wan_r1') || { left: '52%', top: '32.5%' };
+  const fwRtr = ciscoDevices.find(d => d.id === 'perimeter_fw') || { left: '52%', top: '22%' };
+
+  // Calculate waypoints across the real Cisco diagram
+  const pts = [
+    { x: parseDevicePercent(srcDev.left, w), y: parseDevicePercent(srcDev.top, h) }
+  ];
+
+  if (!isFail) {
+    if (srcDev.zone && srcDev.zone.includes('BOOTH')) {
+      pts.push({ x: parseDevicePercent(coreSw.left, w), y: parseDevicePercent(coreSw.top, h) });
+    }
+    pts.push({ x: parseDevicePercent(hsrpRtr.left, w), y: parseDevicePercent(hsrpRtr.top, h) });
+    pts.push({ x: parseDevicePercent(fwRtr.left, w), y: parseDevicePercent(fwRtr.top, h) });
+    pts.push({ x: parseDevicePercent(tgtDev.left, w), y: parseDevicePercent(tgtDev.top, h) });
+  } else {
+    pts.push({ x: parseDevicePercent(coreSw.left, w), y: parseDevicePercent(coreSw.top, h) });
+  }
+
+  // Create segments for forward packet
+  for (let i = 0; i < pts.length - 1; i++) {
+    setTimeout(() => {
+      activeCiscoPackets.push({
+        startX: pts[i].x,
+        startY: pts[i].y,
+        endX: pts[i + 1].x,
+        endY: pts[i + 1].y,
+        currentX: pts[i].x,
+        currentY: pts[i].y,
+        progress: 0,
+        speed: 0.08,
+        color: color,
+        isDrop: (isFail && i === pts.length - 2)
+      });
+    }, i * 180);
+  }
+
+  // Create echo reply return packet if successful
+  if (!isFail) {
+    const returnDelay = pts.length * 180 + 100;
+    setTimeout(() => {
+      for (let i = pts.length - 1; i > 0; i--) {
+        setTimeout(() => {
+          activeCiscoPackets.push({
+            startX: pts[i].x,
+            startY: pts[i].y,
+            endX: pts[i - 1].x,
+            endY: pts[i - 1].y,
+            currentX: pts[i].x,
+            currentY: pts[i].y,
+            progress: 0,
+            speed: 0.08,
+            color: '#10b981',
+            isDrop: false
+          });
+        }, (pts.length - 1 - i) * 180);
+      }
+    }, returnDelay);
+  }
+}
+
+function updateCiscoOverlayPackets() {
+  if (!overlayCanvas || !overlayCtx) {
+    initCiscoOverlayCanvas();
+    if (!overlayCanvas || !overlayCtx) return;
+  }
+
+  // Ensure canvas dimensions match wrapper
+  const img = document.getElementById('ciscoWorkingModelImg');
+  if (img && img.clientWidth && (overlayCanvas.width !== img.clientWidth || overlayCanvas.height !== img.clientHeight)) {
+    overlayCanvas.width = img.clientWidth;
+    overlayCanvas.height = img.clientHeight;
+  }
+
+  overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
+  for (let i = activeCiscoPackets.length - 1; i >= 0; i--) {
+    const pkt = activeCiscoPackets[i];
+    pkt.progress += pkt.speed;
+    pkt.currentX = pkt.startX + (pkt.endX - pkt.startX) * pkt.progress;
+    pkt.currentY = pkt.startY + (pkt.endY - pkt.startY) * pkt.progress;
+
+    // Draw glowing packet envelope
+    overlayCtx.save();
+    overlayCtx.shadowBlur = 12;
+    overlayCtx.shadowColor = pkt.color;
+
+    // Glowing outer ring
+    overlayCtx.beginPath();
+    overlayCtx.arc(pkt.currentX, pkt.currentY, 9, 0, Math.PI * 2);
+    overlayCtx.fillStyle = pkt.color;
+    overlayCtx.globalAlpha = 0.35;
+    overlayCtx.fill();
+
+    // Solid core packet
+    overlayCtx.beginPath();
+    overlayCtx.arc(pkt.currentX, pkt.currentY, 5.5, 0, Math.PI * 2);
+    overlayCtx.fillStyle = '#ffffff';
+    overlayCtx.globalAlpha = 1.0;
+    overlayCtx.fill();
+    overlayCtx.strokeStyle = pkt.color;
+    overlayCtx.lineWidth = 2;
+    overlayCtx.stroke();
+
+    // Packet type label
+    overlayCtx.font = 'bold 10px monospace';
+    overlayCtx.fillStyle = '#ffffff';
+    overlayCtx.shadowColor = '#000000';
+    overlayCtx.shadowBlur = 4;
+    overlayCtx.fillText('✉ ICMP', pkt.currentX + 8, pkt.currentY - 6);
+
+    overlayCtx.restore();
+
+    if (pkt.progress >= 1) {
+      if (pkt.isDrop) {
+        // Red drop pulse animation
+        overlayCtx.beginPath();
+        overlayCtx.arc(pkt.endX, pkt.endY, 18, 0, Math.PI * 2);
+        overlayCtx.strokeStyle = '#ef4444';
+        overlayCtx.lineWidth = 3;
+        overlayCtx.stroke();
+      }
+      activeCiscoPackets.splice(i, 1);
+    }
+  }
 }
 
 function animatePacketRoute(nodePath, color = '#10b981', speed = 0.35, hopDelay = 20) {
