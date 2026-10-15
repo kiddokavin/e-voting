@@ -409,6 +409,52 @@ body {
   display: block;
 }
 
+/* Cisco Working Model Interactive Hotspots */
+.cisco-hotspot {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  cursor: pointer;
+  background: rgba(59, 130, 246, 0.25);
+  border: 2px solid #3b82f6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 10;
+}
+
+.cisco-hotspot:hover {
+  transform: translate(-50%, -50%) scale(1.35);
+  background: rgba(59, 130, 246, 0.55);
+  border-color: #60a5fa;
+  box-shadow: 0 0 16px rgba(96, 165, 250, 0.9);
+}
+
+.cisco-hotspot.selected-src {
+  background: rgba(59, 130, 246, 0.85) !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 0 20px #3b82f6, 0 0 0 4px rgba(59, 130, 246, 0.35) !important;
+  animation: hotspotSrcPulse 1.2s infinite ease-in-out;
+}
+
+.cisco-hotspot.selected-tgt {
+  background: rgba(16, 185, 129, 0.85) !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 0 20px #10b981, 0 0 0 4px rgba(16, 185, 129, 0.35) !important;
+  animation: hotspotTgtPulse 1.2s infinite ease-in-out;
+}
+
+@keyframes hotspotSrcPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1.2); }
+  50% { transform: translate(-50%, -50%) scale(1.45); }
+}
+
+@keyframes hotspotTgtPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1.2); }
+  50% { transform: translate(-50%, -50%) scale(1.45); }
+}
+
 /* Topology Overlay Controls */
 .topo-legend {
   position: absolute;

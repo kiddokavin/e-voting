@@ -92,9 +92,9 @@ window.boothStatus = boothStatus;
 function getNodeBooth(nodeId) {
   if (!nodeId) return null;
   const nid = String(nodeId).toLowerCase();
-  if (['switch1', 'pc0', 'pc1'].includes(nid)) return 'booth1';
-  if (['switch2', 'pc2', 'pc3'].includes(nid)) return 'booth2';
-  if (['switch3', 'pc4', 'pc5'].includes(nid)) return 'booth3';
+  if (['switch1', 'pc0', 'pc1', 'b1_sw1', 'b1_pc0', 'b1_pc1', 'b1_pc2', 'b1_printer', 'b1_phone', 'b1_ap', 'b1_tablet', 'b1_laptop'].includes(nid)) return 'booth1';
+  if (['switch2', 'pc2', 'pc3', 'b2_sw1', 'b2_pc0', 'b2_pc2', 'b2_printer', 'b2_phone', 'b2_ap', 'b2_tablet', 'b2_laptop'].includes(nid)) return 'booth2';
+  if (['switch3', 'pc4', 'pc5', 'b3_sw1', 'b3_pc0', 'b3_pc2', 'b3_printer', 'b3_phone', 'b3_ap', 'b3_tablet', 'b3_laptop'].includes(nid)) return 'booth3';
   return null;
 }
 
@@ -232,31 +232,97 @@ function resizeCanvas() {
 }
 
 const ciscoDevices = [
-  { id: 'router0', name: 'Router0', ip: '192.168.1.1', type: 'ROUTER', left: '49.8%', top: '15.5%', model: 'Cisco 2911 ISR Router' },
-  { id: 'mswitch0', name: 'Multilayer Switch0', ip: '192.168.1.2', type: 'CORE_SWITCH', left: '49.8%', top: '24.5%', model: 'Cisco Catalyst 3560-24PS' },
-  { id: 'switch0', name: 'Switch0', ip: '192.168.10.1', type: 'SWITCH', left: '27.4%', top: '35.5%', model: 'Cisco Catalyst 2960-24TT' },
-  { id: 'db_server', name: 'Server0', ip: '192.168.10.12', type: 'SERVER', left: '21.5%', top: '53%', model: 'Cisco Server-PT' },
-  { id: 'web_server', name: 'Server1', ip: '192.168.10.10', type: 'SERVER', left: '33.2%', top: '53%', model: 'Cisco Server-PT' },
-  { id: 'dns_server', name: 'Server2', ip: '192.168.10.11', type: 'SERVER', left: '21.5%', top: '68%', model: 'Cisco Server-PT' },
-  { id: 'audit_server', name: 'Server3', ip: '192.168.10.13', type: 'SERVER', left: '33.2%', top: '68%', model: 'Cisco Server-PT' },
-  { id: 'sec_server', name: 'Server4', ip: '192.168.10.14', type: 'SERVER', left: '27.4%', top: '78%', model: 'Cisco Server-PT' },
-  { id: 'switch1', name: 'Switch1', ip: '192.168.20.1', type: 'SWITCH', left: '45.1%', top: '37%', model: 'Cisco Catalyst 2960-24TT' },
-  { id: 'pc0', name: 'PC0', ip: '192.168.20.10', type: 'PC', left: '42.2%', top: '64%', model: 'Generic PC-PT' },
-  { id: 'pc1', name: 'PC1', ip: '192.168.20.11', type: 'PC', left: '48.1%', top: '64%', model: 'Generic PC-PT' },
-  { id: 'switch2', name: 'Switch2', ip: '192.168.30.1', type: 'SWITCH', left: '57.1%', top: '37%', model: 'Cisco Catalyst 2960-24TT' },
-  { id: 'pc2', name: 'PC2', ip: '192.168.30.10', type: 'PC', left: '54.6%', top: '64%', model: 'Generic PC-PT' },
-  { id: 'pc3', name: 'PC3', ip: '192.168.30.11', type: 'PC', left: '59.6%', top: '64%', model: 'Generic PC-PT' },
-  { id: 'switch3', name: 'Switch3', ip: '192.168.40.1', type: 'SWITCH', left: '69.1%', top: '37%', model: 'Cisco Catalyst 2960-24TT' },
-  { id: 'pc4', name: 'PC4', ip: '192.168.40.10', type: 'PC', left: '66.6%', top: '64%', model: 'Generic PC-PT' },
-  { id: 'pc5', name: 'PC5', ip: '192.168.40.11', type: 'PC', left: '71.6%', top: '64%', model: 'Generic PC-PT' },
-  { id: 'switch4', name: 'Switch4', ip: '192.168.50.1', type: 'SWITCH', left: '81.1%', top: '37%', model: 'Cisco Catalyst 2960-24TT' },
-  { id: 'pc6', name: 'PC6', ip: '192.168.50.10', type: 'PC', left: '76.8%', top: '64%', model: 'Generic PC-PT' },
-  { id: 'pc7', name: 'PC7', ip: '192.168.50.11', type: 'PC', left: '81.1%', top: '75%', model: 'Generic PC-PT' },
-  { id: 'pc8', name: 'PC8', ip: '192.168.50.12', type: 'PC', left: '85.4%', top: '64%', model: 'Generic PC-PT' }
+  // 1. ELECTION OFFICERS CONTROL (Top-Left)
+  { id: 'aws_pc2', name: 'AWS-PC2', ip: '20.0.0.10', type: 'PC', left: '12.4%', top: '4.8%', model: 'Cisco PC-PT', zone: 'ELECTION OFFICERS CONTROL' },
+  { id: 'aws_relational_db', name: 'AWS Relational DB', ip: '20.0.0.90', type: 'SERVER', left: '13.5%', top: '16.5%', model: 'Server-PT (Database)', zone: 'ELECTION OFFICERS CONTROL' },
+  { id: 'aws_server', name: 'Server-PT AWS-S1', ip: '20.0.0.20', type: 'SERVER', left: '10.5%', top: '10.5%', model: 'Server-PT', zone: 'ELECTION OFFICERS CONTROL' },
+  { id: 'aws_switch', name: 'AWS-2960-TT', ip: '20.0.0.1', type: 'SWITCH', left: '21.5%', top: '10.5%', model: 'Catalyst 2960-TT', zone: 'ELECTION OFFICERS CONTROL' },
+
+  // 2. WAN & INTERNET / CLOUD INFRASTRUCTURE
+  { id: 'wan_cloud', name: 'AWS-CLOUD', ip: '20.0.0.0/30', type: 'ROUTER', left: '35.5%', top: '11.5%', model: 'ISR 4331 Router', zone: 'WAN / CLOUD' },
+  { id: 'wan_router', name: 'WAN-R2', ip: '20.20.20.0/30', type: 'ROUTER', left: '50.5%', top: '11.5%', model: 'ISR 4331 Router', zone: 'WAN GATEWAY' },
+
+  // 3. PERIMETER FIREWALL (Center Circle Yellow)
+  { id: 'perimeter_fw', name: 'PERIMETER-FW1', ip: '197.200.100.0/30', type: 'ROUTER', left: '52.0%', top: '22.0%', model: 'Cisco 5506-X ASA Firewall', zone: 'PERIMETER FIREWALL' },
+
+  // 4. E-VOTING SERVERS / DMZ CLUSTER (Top-Right Green Box)
+  { id: 'dmz_sw1', name: 'DMZ-SW1', ip: '10.20.10.1', type: 'SWITCH', left: '62.5%', top: '21.5%', model: 'Cisco Catalyst 2960-24TT', zone: 'E-VOTING SERVERS (DMZ)' },
+  { id: 'srv_primary', name: 'E-PRIMARY SERVER', ip: '10.20.10.10', type: 'SERVER', left: '73.2%', top: '11.5%', model: 'Server-PT (Primary Voting Engine)', zone: 'E-VOTING SERVERS (DMZ)' },
+  { id: 'srv_secondary', name: 'ESX-SECONDARY SERVER', ip: '10.20.10.11', type: 'SERVER', left: '77.5%', top: '17.0%', model: 'Server-PT (Redundant Standby)', zone: 'E-VOTING SERVERS (DMZ)' },
+  { id: 'srv_storage_pri', name: 'APP & STORAGE-PRIMARY', ip: '10.20.10.20', type: 'SERVER', left: '78.2%', top: '23.8%', model: 'Server-PT (Vote Vault Primary)', zone: 'E-VOTING SERVERS (DMZ)' },
+  { id: 'srv_storage_sec', name: 'NET-APP-STORAGE-SECONDARY', ip: '10.20.10.21', type: 'SERVER', left: '74.2%', top: '28.5%', model: 'Server-PT (Storage Backup)', zone: 'E-VOTING SERVERS (DMZ)' },
+
+  // 5. BOOTH CONTROLLERS & WIRELESS LAN (Orange Box Left)
+  { id: 'wlc_ctrl', name: 'WLC', ip: '192.168.0.5', type: 'SWITCH', left: '17.8%', top: '39.2%', model: 'Cisco 2504 WLC (Wireless Controller)', zone: 'BOOTH CONTROLLERS' },
+  { id: 'it_router', name: 'IT-Route', ip: '192.168.0.4', type: 'ROUTER', left: '12.0%', top: '42.0%', model: 'Cisco 2911 ISR Router', zone: 'BOOTH CONTROLLERS' },
+  { id: 'wlc_sw', name: 'WLC-SW', ip: '192.168.0.2', type: 'SWITCH', left: '17.8%', top: '47.5%', model: 'Catalyst 2960-24TT', zone: 'BOOTH CONTROLLERS' },
+  { id: 'net_sec_eng', name: 'NET-SEC-ENG PC', ip: '192.168.0.20', type: 'PC', left: '8.8%', top: '45.0%', model: 'Security Engineer Console', zone: 'BOOTH CONTROLLERS' },
+  { id: 'conf_ap', name: 'CONF-LAP AP', ip: '192.168.0.3', type: 'SWITCH', left: '10.5%', top: '49.8%', model: 'Aironet LAP-PT (Access Point)', zone: 'BOOTH CONTROLLERS' },
+
+  // 6. CORE REDUNDANCY (HSRP ACTIVE / STANDBY ROUTERS & MULTILAYER SWITCHES)
+  { id: 'wan_r1', name: 'WAN-R1 (HSRP Gateway)', ip: '10.20.10.0/30', type: 'ROUTER', left: '52.0%', top: '32.5%', model: 'Cisco 2911 ISR Router', zone: 'HSRP CORE' },
+  { id: 'core_sw_active', name: 'CORE-SW-ACT (Active)', ip: '10.10.0.1 / 192.168.0.1', type: 'CORE_SWITCH', left: '38.0%', top: '40.8%', model: 'Catalyst 3560-24PS (Active L3)', zone: 'HSRP ACTIVE' },
+  { id: 'core_sw_standby', name: 'CORE-SW-STBY (Standby)', ip: '10.10.0.2 / 192.168.0.2', type: 'CORE_SWITCH', left: '68.0%', top: '40.8%', model: 'Catalyst 3560-24PS (Standby L3)', zone: 'HSRP STANDBY' },
+
+  // 7. POLLING BOOTH 1 (Green/Pink Panels Left)
+  { id: 'b1_sw1', name: 'PH-B1-SW', ip: '192.168.20.1', type: 'SWITCH', left: '13.0%', top: '66.5%', model: 'Catalyst 2960-24TT', zone: 'BOOTH 1 (VLAN 20)' },
+  { id: 'b1_pc0', name: 'PH-PC', ip: '192.168.20.10', type: 'PC', left: '7.0%', top: '67.0%', model: 'Voting Terminal PC-PT', zone: 'BOOTH 1 (VLAN 20)' },
+  { id: 'b1_pc1', name: 'PH-PC1', ip: '192.168.20.11', type: 'PC', left: '7.0%', top: '71.5%', model: 'Voting Terminal PC-PT', zone: 'BOOTH 1 (VLAN 20)' },
+  { id: 'b1_pc2', name: 'PH-PC2', ip: '192.168.20.12', type: 'PC', left: '19.0%', top: '71.5%', model: 'Voting Terminal PC-PT', zone: 'BOOTH 1 (VLAN 20)' },
+  { id: 'b1_printer', name: 'PH-Printer0', ip: '192.168.20.25', type: 'PC', left: '9.2%', top: '75.8%', model: 'Printer-PT (VVPAT System)', zone: 'BOOTH 1 (VLAN 20)' },
+  { id: 'b1_phone', name: 'PH-IP Phone', ip: '172.16.0.20', type: 'PC', left: '15.0%', top: '75.8%', model: 'Cisco 7960 IP Phone (VOIP)', zone: 'BOOTH 1 (VLAN 20)' },
+  { id: 'b1_ap', name: 'PH-LAP (AP)', ip: '10.10.0.10', type: 'SWITCH', left: '12.0%', top: '83.5%', model: 'Cisco Lightweight AP', zone: 'BOOTH 1 (VLAN 20)' },
+  { id: 'b1_tablet', name: 'PH-Tablet', ip: '10.10.0.21', type: 'PC', left: '7.5%', top: '89.5%', model: 'TabletPC-PT', zone: 'BOOTH 1 (VLAN 20)' },
+  { id: 'b1_laptop', name: 'PH-Laptop', ip: '10.10.0.22', type: 'PC', left: '17.0%', top: '89.5%', model: 'Laptop-PT', zone: 'BOOTH 1 (VLAN 20)' },
+
+  // 8. POLLING BOOTH 2 (Center Panels)
+  { id: 'b2_sw1', name: 'DOC-B2-SW', ip: '192.168.30.1', type: 'SWITCH', left: '42.8%', top: '66.5%', model: 'Catalyst 2960-24TT', zone: 'BOOTH 2 (VLAN 30)' },
+  { id: 'b2_pc0', name: 'DOC-PC', ip: '192.168.30.10', type: 'PC', left: '38.0%', top: '70.5%', model: 'Voting Terminal PC-PT', zone: 'BOOTH 2 (VLAN 30)' },
+  { id: 'b2_pc2', name: 'DOC-PC2', ip: '192.168.30.12', type: 'PC', left: '47.5%', top: '70.5%', model: 'Voting Terminal PC-PT', zone: 'BOOTH 2 (VLAN 30)' },
+  { id: 'b2_printer', name: 'DOC-Printer', ip: '192.168.30.25', type: 'PC', left: '40.0%', top: '75.5%', model: 'Printer-PT (VVPAT System)', zone: 'BOOTH 2 (VLAN 30)' },
+  { id: 'b2_phone', name: 'DOC-IP Phone', ip: '172.16.0.30', type: 'PC', left: '46.0%', top: '75.5%', model: 'Cisco 7960 IP Phone (VOIP)', zone: 'BOOTH 2 (VLAN 30)' },
+  { id: 'b2_ap', name: 'DOC-LAP (AP)', ip: '10.10.0.12', type: 'SWITCH', left: '43.0%', top: '83.5%', model: 'Cisco Lightweight AP', zone: 'BOOTH 2 (VLAN 30)' },
+  { id: 'b2_tablet', name: 'DOC-Tablet', ip: '10.10.0.31', type: 'PC', left: '38.5%', top: '89.5%', model: 'TabletPC-PT', zone: 'BOOTH 2 (VLAN 30)' },
+  { id: 'b2_laptop', name: 'DOC-Laptop', ip: '10.10.0.32', type: 'PC', left: '47.0%', top: '89.5%', model: 'Laptop-PT', zone: 'BOOTH 2 (VLAN 30)' },
+
+  // 9. POLLING BOOTH 3 (Right Panels)
+  { id: 'b3_sw1', name: 'CORP-B3-SW', ip: '192.168.40.1', type: 'SWITCH', left: '72.0%', top: '66.5%', model: 'Catalyst 2960-24TT', zone: 'BOOTH 3 (VLAN 40)' },
+  { id: 'b3_pc0', name: 'CORP-PC', ip: '192.168.40.10', type: 'PC', left: '67.0%', top: '70.5%', model: 'Voting Terminal PC-PT', zone: 'BOOTH 3 (VLAN 40)' },
+  { id: 'b3_pc2', name: 'CORP-PC2', ip: '192.168.40.12', type: 'PC', left: '77.0%', top: '70.5%', model: 'Voting Terminal PC-PT', zone: 'BOOTH 3 (VLAN 40)' },
+  { id: 'b3_printer', name: 'CORP-Printer', ip: '192.168.40.25', type: 'PC', left: '69.5%', top: '75.5%', model: 'Printer-PT (VVPAT System)', zone: 'BOOTH 3 (VLAN 40)' },
+  { id: 'b3_phone', name: 'CORP-IP Phone', ip: '172.16.0.40', type: 'PC', left: '75.5%', top: '75.5%', model: 'Cisco 7960 IP Phone (VOIP)', zone: 'BOOTH 3 (VLAN 40)' },
+  { id: 'b3_ap', name: 'CORP-LAP (AP)', ip: '10.10.0.14', type: 'SWITCH', left: '72.5%', top: '83.5%', model: 'Cisco Lightweight AP', zone: 'BOOTH 3 (VLAN 40)' },
+  { id: 'b3_tablet', name: 'CORP-Tablet', ip: '10.10.0.41', type: 'PC', left: '67.5%', top: '89.5%', model: 'TabletPC-PT', zone: 'BOOTH 3 (VLAN 40)' },
+  { id: 'b3_laptop', name: 'CORP-Laptop', ip: '10.10.0.42', type: 'PC', left: '76.8%', top: '89.5%', model: 'Laptop-PT', zone: 'BOOTH 3 (VLAN 40)' }
 ];
 
 let hotspotSource = null;
 let hotspotTarget = null;
+
+function switchTopologyView(viewMode) {
+  const diagView = document.getElementById('ciscoDiagramView');
+  const canvasView = document.getElementById('ciscoCanvasView');
+  const btnReal = document.getElementById('viewBtnCiscoReal');
+  const btnCanvas = document.getElementById('viewBtnCanvas');
+
+  if (viewMode === 'cisco-real') {
+    if (diagView) diagView.style.display = 'block';
+    if (canvasView) canvasView.style.display = 'none';
+    if (btnReal) { btnReal.style.background = '#3b82f6'; btnReal.className = 'btn-primary'; }
+    if (btnCanvas) { btnCanvas.style.background = 'rgba(255,255,255,0.08)'; btnCanvas.className = 'btn-secondary'; }
+    initCiscoHotspots();
+  } else {
+    if (diagView) diagView.style.display = 'none';
+    if (canvasView) canvasView.style.display = 'block';
+    if (btnReal) { btnReal.style.background = 'rgba(255,255,255,0.08)'; btnReal.className = 'btn-secondary'; }
+    if (btnCanvas) { btnCanvas.style.background = '#3b82f6'; btnCanvas.className = 'btn-primary'; }
+    setTimeout(() => {
+      resizeCanvas();
+      drawTopology();
+    }, 50);
+  }
+}
+window.switchTopologyView = switchTopologyView;
 
 function initCiscoHotspots() {
   const container = document.getElementById('ciscoHotspotsContainer');
@@ -268,7 +334,7 @@ function initCiscoHotspots() {
     btn.className = 'cisco-hotspot';
     btn.style.left = dev.left;
     btn.style.top = dev.top;
-    btn.title = `${dev.name} (${dev.ip})\nModel: ${dev.model}\nClick to Select for Cisco Ping!`;
+    btn.title = `Device: ${dev.name}\nIP: ${dev.ip}\nZone: ${dev.zone}\nModel: ${dev.model}\n\n👉 Click to Select for Cisco Ping!`;
     btn.dataset.id = dev.id;
 
     btn.onclick = (e) => {
@@ -294,18 +360,23 @@ function handleHotspotClick(dev) {
     if (badge) badge.textContent = `📍 Source: ${dev.name}`;
 
     updateDetailBox(`
-      <div style="color: #60a5fa; font-weight: bold;">
-        📍 SOURCE SELECTED ON DIAGRAM: ${dev.name} (${dev.ip})
-      </div>
-      <div style="color: #f59e0b; margin-top: 4px;">
-        👉 Now click any 2nd Target Device on the Cisco diagram to simulate ICMP Ping...
+      <div style="background:#0f172a; padding:12px; border-radius:8px; border:1px solid #3b82f6; font-family:monospace;">
+        <div style="color: #60a5fa; font-weight: bold; font-size:0.92rem; margin-bottom:4px;">
+          📍 SOURCE SELECTED: ${dev.name} (${dev.ip})
+        </div>
+        <div style="color: #cbd5e1; font-size:0.8rem;">
+          Subnet / Zone: <strong>${dev.zone}</strong> | Hardware Model: <strong>${dev.model}</strong>
+        </div>
+        <div style="color: #f59e0b; margin-top: 8px; font-size:0.82rem; font-weight:bold;">
+          👉 Now click any 2nd Target Device on the Cisco Diagram to simulate ICMP Ping...
+        </div>
       </div>
     `);
 
-    showAlert(`📍 Source '${dev.name}' selected on Cisco diagram! Now click target device...`, 'info');
+    if (typeof showAlert === 'function') showAlert(`📍 Source '${dev.name}' selected! Now click target device...`, 'info');
   } else if (hotspotSource && !hotspotTarget) {
     if (hotspotSource.id === dev.id) {
-      showAlert('Please select a DIFFERENT target device on the diagram!', 'warning');
+      if (typeof showAlert === 'function') showAlert('Please select a DIFFERENT target device on the diagram!', 'warning');
       return;
     }
 
@@ -318,12 +389,13 @@ function handleHotspotClick(dev) {
     const badge = document.getElementById('topoSelectedNodeBadge');
     if (badge) badge.textContent = `Ping: ${hotspotSource.name} ➔ ${hotspotTarget.name}`;
 
-    executeRouterPing(hotspotSource.name, hotspotTarget.name, false);
+    executeRouterPing(hotspotSource, hotspotTarget, false);
   }
 }
 
 function initTopologyCanvas() {
   canvas = document.getElementById('topologyCanvas');
+  initCiscoHotspots();
   if (!canvas) return;
   ctx = canvas.getContext('2d');
 
@@ -439,8 +511,8 @@ function sendCustomPacket() {
   const srcId = document.getElementById('packetSourceSelect').value;
   const tgtId = document.getElementById('packetTargetSelect').value;
 
-  const srcNode = topoNodes.find(n => n.id.toLowerCase() === srcId.toLowerCase() || n.name.toLowerCase().includes(srcId.toLowerCase()));
-  const tgtNode = topoNodes.find(n => n.id.toLowerCase() === tgtId.toLowerCase() || n.name.toLowerCase().includes(tgtId.toLowerCase()) || n.ip === tgtId);
+  const srcNode = ciscoDevices.find(n => n.id === srcId) || topoNodes.find(n => n.id.toLowerCase() === srcId.toLowerCase() || n.name.toLowerCase().includes(srcId.toLowerCase()));
+  const tgtNode = ciscoDevices.find(n => n.id === tgtId) || topoNodes.find(n => n.id.toLowerCase() === tgtId.toLowerCase() || n.name.toLowerCase().includes(tgtId.toLowerCase()) || n.ip === tgtId);
 
   const isFailed = tgtId === 'offline_target' || tgtId.includes('offline') || tgtId.includes('192.168.99.250');
   executeRouterPing(srcNode || srcId, tgtNode || tgtId, isFailed);
@@ -459,27 +531,35 @@ function triggerTestPingSuccess() {
   const route = onlineRoutes[pingRouteIndex % onlineRoutes.length];
   pingRouteIndex++;
 
-  const srcNode = topoNodes.find(n => n.id === route.src);
-  const tgtNode = topoNodes.find(n => n.id === route.tgt);
+  const srcNode = ciscoDevices.find(n => n.id === route.src) || topoNodes.find(n => n.id === route.src);
+  const tgtNode = ciscoDevices.find(n => n.id === route.tgt) || topoNodes.find(n => n.id === route.tgt);
 
   executeRouterPing(srcNode || route.src, tgtNode || route.tgt, false);
 }
 
 function triggerTestPingFail() {
-  const failSources = ['pc0', 'pc2', 'pc4', 'pc8'];
+  const failSources = ['b1_pc0', 'b2_pc0', 'b3_pc0', 'aws_pc2'];
   const srcId = failSources[pingRouteIndex % failSources.length];
   pingRouteIndex++;
 
-  const srcNode = topoNodes.find(n => n.id === srcId);
-  const tgtNode = { id: 'offline_target', name: 'Offline Node', ip: '0.0.0.0' };
+  const srcNode = ciscoDevices.find(n => n.id === srcId) || topoNodes.find(n => n.id === srcId);
+  const tgtNode = { id: 'offline_target', name: 'Offline Host (Simulate Timeout)', ip: '0.0.0.0' };
   executeRouterPing(srcNode || srcId, tgtNode, true);
 }
 
 function executeRouterPing(srcParam, tgtParam, forceFail = false) {
   pduCounter++;
 
-  const srcNode = (typeof srcParam === 'object') ? srcParam : (topoNodes.find(n => n.id.toLowerCase() === String(srcParam).toLowerCase() || n.name.toLowerCase().includes(String(srcParam).toLowerCase())) || { id: srcParam, name: String(srcParam) });
-  const tgtNode = (typeof tgtParam === 'object') ? tgtParam : (topoNodes.find(n => n.id.toLowerCase() === String(tgtParam).toLowerCase() || n.name.toLowerCase().includes(String(tgtParam).toLowerCase())) || { id: tgtParam, name: String(tgtParam) });
+  const lookupNode = (param) => {
+    if (typeof param === 'object' && param !== null) return param;
+    const str = String(param).toLowerCase();
+    return ciscoDevices.find(n => n.id.toLowerCase() === str || n.name.toLowerCase() === str) ||
+           topoNodes.find(n => n.id.toLowerCase() === str || n.name.toLowerCase().includes(str) || n.ip === str) ||
+           { id: param, name: String(param), ip: 'Dynamic Host' };
+  };
+
+  const srcNode = lookupNode(srcParam);
+  const tgtNode = lookupNode(tgtParam);
 
   pingSourceNode = srcNode;
   pingTargetNode = tgtNode;

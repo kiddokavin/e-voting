@@ -243,28 +243,57 @@
         <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
           <div>
             <h2 class="card-title">🌐 Cisco Packet Tracer Interactive Network Simulator</h2>
-            <p style="font-size: 0.8rem; color: var(--text-muted);">Centralized E-Voting Network Topology Working Model (Click any 2 nodes to ping via Router0 Gateway)</p>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Real-World E-Voting Cisco Infrastructure Working Model (HSRP Active/Standby, Perimeter FW, DMZ Servers, APs & Laptops)</p>
+          </div>
+
+          <!-- Topology View Switcher Buttons -->
+          <div style="display: flex; gap: 0.4rem; background: rgba(0,0,0,0.4); padding: 0.3rem; border-radius: 8px; border: 1px solid var(--border-color);">
+            <button id="viewBtnCiscoReal" class="btn-primary" style="padding: 0.3rem 0.75rem; font-size: 0.76rem; width: auto; background: #3b82f6;" onclick="switchTopologyView('cisco-real')">
+              🖼️ Official Cisco Working Model
+            </button>
+            <button id="viewBtnCanvas" class="btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.76rem; width: auto; background: rgba(255,255,255,0.08);" onclick="switchTopologyView('canvas-interactive')">
+              🔀 Interactive Live Canvas
+            </button>
           </div>
 
           <!-- Interactive Custom Packet Generator Controls -->
           <div style="display: flex; gap: 0.6rem; align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 10px; border: 1px solid var(--border-color); flex-wrap: wrap;">
             <span style="font-size: 0.78rem; color: #60a5fa; font-weight: bold;">📡 Send ICMP Packet:</span>
-            <select id="packetSourceSelect" class="form-select" style="padding: 0.3rem 0.6rem; font-size: 0.78rem; width: 140px;">
-              <option value="pc0">PC0</option>
-              <option value="pc1">PC1</option>
-              <option value="pc2">PC2</option>
-              <option value="pc4">PC4</option>
-              <option value="pc8">PC8</option>
-              <option value="db_server">Server0</option>
+            <select id="packetSourceSelect" class="form-select" style="padding: 0.3rem 0.6rem; font-size: 0.78rem; width: 170px;">
+              <optgroup label="Booth 1 (VLAN 20)">
+                <option value="b1_pc0">PH-PC (Booth 1 EVM)</option>
+                <option value="b1_laptop">PH-Laptop (Wireless)</option>
+                <option value="b1_phone">PH-IP Phone (VoIP)</option>
+              </optgroup>
+              <optgroup label="Booth 2 (VLAN 30)">
+                <option value="b2_pc0">DOC-PC (Booth 2 EVM)</option>
+                <option value="b2_laptop">DOC-Laptop (Wireless)</option>
+              </optgroup>
+              <optgroup label="Booth 3 (VLAN 40)">
+                <option value="b3_pc0">CORP-PC (Booth 3 EVM)</option>
+                <option value="b3_laptop">CORP-Laptop (Wireless)</option>
+              </optgroup>
+              <optgroup label="Election Control & Engineers">
+                <option value="aws_pc2">AWS-PC2 (Officer Control)</option>
+                <option value="net_sec_eng">NET-SEC-ENG PC</option>
+              </optgroup>
             </select>
             <span style="font-size: 0.78rem; color: var(--text-muted);">➔</span>
-            <select id="packetTargetSelect" class="form-select" style="padding: 0.3rem 0.6rem; font-size: 0.78rem; width: 160px;">
-              <option value="sec_server">Server4</option>
-              <option value="web_server">Server1</option>
-              <option value="db_server">Server0</option>
-              <option value="audit_server">Server3</option>
-              <option value="router0">Router0</option>
-              <option value="offline_target">Offline Node</option>
+            <select id="packetTargetSelect" class="form-select" style="padding: 0.3rem 0.6rem; font-size: 0.78rem; width: 200px;">
+              <optgroup label="E-Voting DMZ Servers">
+                <option value="srv_primary">E-PRIMARY SERVER (10.20.10.10)</option>
+                <option value="srv_storage_pri">APP & STORAGE-PRI (10.20.10.20)</option>
+                <option value="srv_secondary">ESX-SECONDARY (10.20.10.11)</option>
+              </optgroup>
+              <optgroup label="Core Gateways & Firewalls">
+                <option value="perimeter_fw">PERIMETER-FW1 (ASA 5506-X)</option>
+                <option value="wan_r1">WAN-R1 (HSRP Virtual 192.168.0.1)</option>
+                <option value="core_sw_active">CORE-SW-ACT (L3 Multilayer)</option>
+              </optgroup>
+              <optgroup label="AWS Cloud & DB">
+                <option value="aws_relational_db">AWS Relational DB (20.0.0.90)</option>
+              </optgroup>
+              <option value="offline_target">Offline Host (Simulate Timeout)</option>
             </select>
             <button class="btn-primary" style="padding: 0.35rem 0.8rem; font-size: 0.78rem; width: auto;" onclick="sendCustomPacket()">
               🚀 Fire PDU Ping
@@ -351,8 +380,44 @@
           </form>
         </div>
 
-        <!-- Live Cisco Packet Tracer Working Model Canvas Visualizer -->
-        <div class="topology-container">
+        <!-- 1. OFFICIAL CISCO WORKING MODEL VIEW (IMAGE + HOTSPOTS + PING) -->
+        <div id="ciscoDiagramView" style="display: block; position: relative; width: 100%; background: #ffffff; border-radius: 12px; overflow: hidden; border: 2px solid #3b82f6; box-shadow: 0 8px 30px rgba(0,0,0,0.5);">
+          <!-- Top Info Banner -->
+          <div style="background: #1e293b; color: #f8fafc; padding: 0.6rem 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.8rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <span style="font-size: 1rem;">🌐</span>
+              <strong style="color: #60a5fa;">Cisco Architecture:</strong>
+              <span>Election Officers | ASA-5506-X FW | DMZ Servers | Active/Standby HSRP | Booths 1-3 | Laptops</span>
+            </div>
+            <span style="background: rgba(16,185,129,0.2); color: #10b981; border: 1px solid #10b981; padding: 2px 8px; border-radius: 6px; font-weight: bold; font-size: 0.72rem;">
+              ● Working Model Active
+            </span>
+          </div>
+
+          <!-- Image Container with Absolute Interactive Hotspots -->
+          <div style="position: relative; width: 100%; line-height: 0; background: #fff;">
+            <img src="img/cisco_topology.png" alt="Cisco Packet Tracer Architecture Working Model" style="width: 100%; height: auto; display: block;" id="ciscoWorkingModelImg">
+            <!-- Clickable Interactive Device Hotspots Overlay -->
+            <div id="ciscoHotspotsContainer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: auto;">
+              <!-- Hotspots injected dynamically by topology.js -->
+            </div>
+          </div>
+
+          <!-- Bottom Hotspot Legend & Tips -->
+          <div style="background: #0f172a; padding: 0.6rem 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.6rem; font-size: 0.76rem; color: #94a3b8;">
+            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+              <span>💡 <strong style="color: #f1f5f9;">Tip:</strong> Click any device above (Router, Switch, Server, PC, Laptop) to select and Ping!</span>
+              <span style="display: flex; align-items: center; gap: 4px;"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #3b82f6;"></span> Source</span>
+              <span style="display: flex; align-items: center; gap: 4px;"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></span> Target</span>
+            </div>
+            <div style="color: #38bdf8; font-weight: bold;">
+              HSRP Virtual IP: 192.168.0.1 (VLAN 10, 20, 99)
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. LIVE CISCO PACKET TRACER SCHEMATIC CANVAS (Alternative Mode) -->
+        <div id="ciscoCanvasView" class="topology-container" style="display: none;">
           <canvas id="topologyCanvas"></canvas>
 
           <div class="topo-legend">
